@@ -1,29 +1,32 @@
 function composite(bgImg, fgImg, fgOpac, fgPos) {
-
-    const startX = 0;
-    const startY = 0;
-
-    const endX = bgImg.width;
-    const endY = bgImg.height;
-
-    for (let y = startY; y < endY; y++) {
-        for (let x = startX; x < endX; x++) {
+    for (let y = 0; y < fgImg.height; y++) {
+        for (let x = 0; x < fgImg.width; x++) {
+            const bgX = x + fgPos.x;
+            const bgY = y + fgPos.y;
             
-            var posX = x + fgPos.x;
-            var posY = y + fgPos.y;
-
-            if (posX < 0 || posX >= bgImg.width || posY < 0 || posY >= bgImg.height) {
-                continue; 
+            if (bgX < 0 || bgX >= bgImg.width || bgY < 0 || bgY >= bgImg.height) {
+                continue;
             }
-
-            var i = (y * fgImg.width + x) * 4;
-            var bg_i = (posY * bgImg.width + posX) * 4;
-            var alpha = (fgImg.data[i + 3] / 255) * fgOpac;
-
-            bgImg.data[bg_i] = fgImg.data[i] * alpha + bgImg.data[bg_i] * (1-alpha);
-            bgImg.data[bg_i + 1] = fgImg.data[i + 1] * alpha + bgImg.data[bg_i + 1] * (1-alpha);
-            bgImg.data[bg_i + 2] = fgImg.data[i + 2] * alpha + bgImg.data[bg_i + 2] * (1-alpha);
-            bgImg.data[bg_i + 3] = 255;
+            
+            const fgIndex = (y * fgImg.width + x) * 4;
+            const bgIndex = (bgY * bgImg.width + bgX) * 4;
+            
+            const fgAlpha = (fgImg.data[fgIndex + 3] / 255) * fgOpac;
+            
+            if (fgAlpha === 0) continue;
+            
+            const bgAlpha = bgImg.data[bgIndex + 3] / 255;
+            const outAlpha = fgAlpha + bgAlpha * (1 - fgAlpha);
+            
+            // Blend color channels
+            for (let i = 0; i < 3; i++) {
+                bgImg.data[bgIndex + i] = Math.round(
+                    fgImg.data[fgIndex + i] * fgAlpha + 
+                    bgImg.data[bgIndex + i] * bgAlpha * (1 - fgAlpha)
+                );
+            }
+            
+            bgImg.data[bgIndex + 3] = Math.round(outAlpha * 255);
         }
     }
 }
