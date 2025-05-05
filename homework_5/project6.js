@@ -37,13 +37,39 @@ uniform int bounceLimit;
 bool IntersectRay( inout HitInfo hit, Ray ray );
 
 // Shades the given point and returns the computed color.
+// From the slides:
+// k_d = mtl.k_d;
+// k_s = mtl.k_s;
+// reflection: r = 2 * (light * normal) * normal - light
+// Angle from normal to light: theta = acos( dot( normal, light ) )
+// Angle from normal to view: phi = acos( dot( r, view ) )
+// Intensity: I = light.intensity
+// n = mtl.n
+// Color: C = I * cos(theta) * k_d + I * cos(phi)^n * k_s   
 vec3 Shade( Material mtl, vec3 position, vec3 normal, vec3 view )
 {
 	vec3 color = vec3(0,0,0);
 	for ( int i=0; i<NUM_LIGHTS; ++i ) {
+		Light light = lights[i];
 		// TO-DO: Check for shadows
+		Ray shadowRay;
+		shadowRay.pos = position + normal * 0.001;	// offset to avoid self-shadowing
+		shadowRay.dir = normalize( light.position - shadowRay.pos );
+		HitInfo shadowHit;
+		bool shadowHitFound = IntersectRay( shadowHit, shadowRay );
+		if ( shadowHitFound ) {
+			if ( shadowHit.t < length( light.position - shadowRay.pos ) ) {
+				continue;	// shadowed, skip this light
+			}
+		}
 		// TO-DO: If not shadowed, perform shading using the Blinn model
-		color += mtl.k_d * lights[i].intensity;	// change this line
+		vec3 I = light.intensity;
+		vec3 lightDir = normalize(light.position - position);
+		vec3 r = reflect(-lightDir, normal);
+		float cosTheta = max(0.0, dot(normal, lightDir));
+		float cosPhi = max(0.0, dot(r, view));
+		//color += mtl.k_d * lights[i].intensity;	// change this line
+		color += I * cosTheta * mtl.k_d + I * pow(cosPhi, mtl.n) * mtl.k_s;
 	}
 	return color;
 }
