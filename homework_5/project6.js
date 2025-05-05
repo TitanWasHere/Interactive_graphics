@@ -78,13 +78,51 @@ vec3 Shade( Material mtl, vec3 position, vec3 normal, vec3 view )
 // and updates the given HitInfo using the information of the sphere
 // that first intersects with the ray.
 // Returns true if an intersection is found.
+
+// From slides formulas:
+// x = ray.pos + t * ray.dir
+// t = (b - sqrt(b^2 - 4ac)) / 2a
+// a = dot(ray.dir, ray.dir)
+// b = 2 * dot(ray.dir, ray.pos - sphere.center)
+// c = dot(ray.pos - sphere.center, ray.pos - sphere.center) - sphere.radius^2
+// if t < 0 (delta negative), no intersection, else yes
+
 bool IntersectRay( inout HitInfo hit, Ray ray )
 {
 	hit.t = 1e30;
 	bool foundHit = false;
 	for ( int i=0; i<NUM_SPHERES; ++i ) {
 		// TO-DO: Test for ray-sphere intersection
-		// TO-DO: If intersection is found, update the given HitInfo
+		Sphere sphere = spheres[i];
+
+		vec3 d = normalize(ray.dir);
+		vec3 p = ray.pos;
+		vec3 center = sphere.center;
+		float r = sphere.radius;
+
+		float a = dot(d,d);
+		float b = 2.0 * dot(d, p - center);
+		float c = dot(p - center, p - center) - pow(r, 2.0);
+		float delta = b * b - 4.0 * a * c;
+
+		if ( delta >= 0.0 ){
+			// TO-DO: If intersection is found, update the given HitInfo
+			float t1 = (-b - sqrt(delta)) / (2.0 * a);
+			float t2 = (-b + sqrt(delta)) / (2.0 * a);
+			float t = min(t1, t2);
+			
+			// Only consider positive t values and closer intersections
+			if (t > 0.0 && t < hit.t) {
+				
+				hit.t = t;
+				hit.position = p + t * d;
+				
+				hit.mtl = sphere.mtl;
+				hit.normal = (hit.position - center) / r;
+
+				foundHit = true;
+			}
+		}
 	}
 	return foundHit;
 }
@@ -108,7 +146,9 @@ vec4 RayTracer( Ray ray )
 			HitInfo h;	// reflection hit info
 			
 			// TO-DO: Initialize the reflection ray
-			
+			r.pos = hit.position;
+			r.dir = reflect( ray.dir, hit.normal );
+
 			if ( IntersectRay( h, r ) ) {
 				// TO-DO: Hit found, so shade the hit point
 				// TO-DO: Update the loop variables for tracing the next reflection ray
