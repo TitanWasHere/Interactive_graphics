@@ -239,14 +239,92 @@ class MeshDrawer
 // This function is called for every step of the simulation.
 // Its job is to advance the simulation for the given time step duration dt.
 // It updates the given positions and velocities.
+
+/*
+Functions that can be used:
+init(x,y,z): sets the x, y, and z coordinates to the given values.
+copy(): returns a copy of the vector object.
+set(v): sets the x, y, and z coordinates to the same values as the given vector v.
+inc(v): increments the x, y, and z coordinate values by adding the coordinate values of the given vector v.
+dec(v): decrements the x, y, and z coordinate values by subtracting the coordinate values of the given vector v.
+scale(f): multiplies the x, y, and z coordinates by the given scalar f.
+add(v): add the given vector v to this vector and returns the resulting vector.
+sub(v): subtracts the given vector v from this vector and returns the resulting vector.
+dot(v): computes the dot product of this vector and the given vector v and returns the resulting scalar.
+cross(v): computes the cross product of this vector and the given vector v and returns the resulting vector.
+mul(f): multiplies the vector by the given scalar f and returns the result.
+div(f): divides the vector by the given scalar f and returns the result.
+len2(): returns the squared length of the vector.
+len(): returns the length of the vector.
+unit(): returns the unit vector along the direction of this vector.
+normalize(): normalizes this vector, turning it into a unit vector.
+*/
 function SimTimeStep( dt, positions, velocities, springs, stiffness, damping, particleMass, gravity, restitution )
 {
-	var forces = Array( positions.length ); // The total for per particle
 
-	// [TO-DO] Compute the total force of each particle
+    let g = gravity.copy();
+    g.scale(particleMass);
+	let forces = new Array(positions.length).fill(g);
+
+    // Calculate spring forces on points
+    springs.map((s, i) => {
+        
+		let p0 = positions[s.p0].copy();
+		let p1 = positions[s.p1].copy();
+		let v0 = velocities[s.p0].copy();
+		let v1 = velocities[s.p1].copy();
+
+		// Calculate spring direction and length
+		let direction = p1.sub(p0);
+		let length = direction.len();
+		let unitDir = direction.unit();
+
+		// Calculate spring force (Hooke's law: F = -k(x - x0))
+		let springForce = unitDir.mul(stiffness * (length - s.rest));
+
+		// Add spring force to both endpoints (equal and opposite)
+		forces[s.p0] = forces[s.p0].add(springForce);
+		forces[s.p1] = forces[s.p1].sub(springForce);
+
+		// Calculate relative velocity along spring direction
+		let relativeVelocity = v1.sub(v0).dot(unitDir);
+
+		// Calculate damping force (proportional to velocity)
+		let dampingForce = unitDir.mul(damping * relativeVelocity);
+
+		// Add damping force to both endpoints
+		forces[s.p0] = forces[s.p0].add(dampingForce);
+		forces[s.p1] = forces[s.p1].sub(dampingForce);
+		
+
+    });
+
+	// Update velocities based on forces
+	for (let i = 0; i < velocities.length; i++) {
+		// a = F/m, v = v + a*dt
+		velocities[i].inc(forces[i].div(particleMass).mul(dt));
+	}
 	
-	// [TO-DO] Update positions and velocities
-	
-	// [TO-DO] Handle collisions
-	
+	// Update positions based on velocities
+	for (let i = 0; i < positions.length; i++) {
+		positions[i].inc(velocities[i].mul(dt));
+	}
+
+	// Handle collisions with boundaries (box of size 2x2x2 centered at origin)
+	for (let i = 0; i < positions.length; i++) {
+		const p = positions[i];
+		
+		// Check and handle collisions for each axis
+		for (const axis of ['x', 'y', 'z']) {
+			if (Math.abs(p[axis]) > 1) {
+				// Reverse direction and apply restitution
+				const sign = Math.sign(p[axis]);
+				velocities[i][axis] *= -restitution;
+				
+				// Position correction to place point at boundary with a bit of bounce
+				p[axis] = sign * (1 + restitution * (Math.abs(p[axis]) - 1));
+			}
+		}
+	}
+
 }
