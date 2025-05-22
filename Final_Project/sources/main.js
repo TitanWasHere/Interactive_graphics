@@ -5,10 +5,10 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js'; // Important for RectAreaLight
 
-import { Room } from './Room.js';
-import { RotatingCube } from './rotatingCube.js';
-import { SceneLight } from './sceneLight.js';
-import { TorchController } from './TorchController.js';
+import { Room } from './js/Room.js';
+import { RotatingCube } from './objects/SimpleGem.js';
+import { SceneLight } from './lights/SceneLight.js';
+import { TorchController } from './controllers/TorchController.js';
 
 
 let scene, camera, renderer, composer, controls;
