@@ -56,7 +56,7 @@ class Room {
                 map: floorTexture,
                 roughness: 0.8,
                 metalness: 0.1,
-                side: THREE.FrontSide,
+                side: THREE.DoubleSide,
             });
         } else {
             // Fallback to shader material if no texture URL or type is 'colors'
@@ -96,7 +96,7 @@ class Room {
                 map: wallTexture,
                 roughness: 0.7,
                 metalness: 0.1,
-                side: THREE.FrontSide,
+                side: THREE.DoubleSide,
             });
         } else {
             // Use shader material for checkerboard pattern

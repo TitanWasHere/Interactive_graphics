@@ -8,6 +8,8 @@ import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLigh
 import { Room } from './Room.js';
 import { RotatingCube } from './rotatingCube.js';
 import { SceneLight } from './sceneLight.js';
+import { TorchController } from './TorchController.js';
+
 
 let scene, camera, renderer, composer, controls;
 let pixelatedPass;
@@ -18,6 +20,8 @@ let wallHeight = 13;
 const frustumHeight = 17;
 let aspect = window.innerWidth / window.innerHeight;
 let frustumWidth = frustumHeight * aspect +3;
+
+let torchController;
 
 const roomConfigurations = [
     {
@@ -32,18 +36,22 @@ const roomConfigurations = [
             textureUrl: './../textures/brick_wall.jpg', 
             textureRepeat: 3 
         },
-        lightConfig: {
-            type: 'point',
-            color: 0xff8800,
-            intensity: 1000,
-            distance: 50,
-            angle: Math.PI / 16,
-            penumbra: 0.02,
-            decay: 2,
-            position: new THREE.Vector3(2, 10, 2),
-            target: new THREE.Vector3(100,10, 10),
-            castShadow: true
-        }
+        lights: [
+            {
+                type: 'spot',
+                name: 'torchLight',
+                color: 0xff6600,
+                intensity: 55,        // Reduced from 500, which is very high
+                distance: 22,
+                angle: Math.PI,   // Changed from -Math.PI/2 which is straight down
+                penumbra: 0.2,
+                decay: 1,
+                position: new THREE.Vector3(5, 1, 0),  // Starting position
+                target: new THREE.Vector3(0, 0, 0),    // Target position
+                castShadow: true,
+                shadowMapSize: 1024
+            }
+        ]
     },
     {
         name: "Classic Grid",
@@ -90,7 +98,7 @@ function init() {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x282C34);
 
-    const camera = new THREE.OrthographicCamera(
+    camera = new THREE.OrthographicCamera(
         -frustumWidth ,
         frustumWidth ,
         frustumHeight,
@@ -98,6 +106,7 @@ function init() {
         0.1,
         1000
     );
+
     camera.position.set(roomSize * 0.8, roomSize * 0.7, roomSize * 0.8);
     camera.lookAt(0, roomSize * 0.2, 0); 
 
@@ -111,6 +120,11 @@ function init() {
     controls.dampingFactor = 0.05;
     controls.target.set(0, roomSize * 0.2, 0); 
 
+    torchController = new TorchController(scene, {
+        roomSize: roomSize,
+        maxSpeed: 0.2,
+        acceleration: 0.02,
+    });
 
     RectAreaLightUniformsLib.init();
 
@@ -137,6 +151,11 @@ function setupSceneObjects(roomIndex) {
     if (currentRoom) currentRoom.dispose();
     if (currentCube) currentCube.dispose();
     if (currentLight) currentLight.dispose();
+    
+    // Detach torch controller from previous light
+    if (torchController) {
+        torchController.detach();
+    }
 
     const config = roomConfigurations[roomIndex];
 
@@ -157,13 +176,37 @@ function setupSceneObjects(roomIndex) {
         }
     });
     
+    // Create the cube
     currentCube = new RotatingCube(scene, new THREE.Vector3(0, 2, 0), 2);
     currentCube.getMesh().castShadow = true;
     
-    // Create light using the new flexible configuration
-    currentLight = new SceneLight(scene, config.lightConfig);
+    // Create SceneLight manager with first light or default
+    currentLight = new SceneLight(scene, { type: 'ambient', color: 0x2d3645, intensity: 0.5 });
+
+    // Process all lights from the config array
+    if (config.lights && config.lights.length > 0) {
+        for (let i = 0; i < config.lights.length; i++) {
+            const lightConfig = config.lights[i];
+            currentLight.addLight(lightConfig.type, lightConfig);
+            
+            // Check if this is our torch light and connect to controller
+            if (lightConfig.name === 'torchLight') {
+                const lightIndex = currentLight.lights.length - 1;
+                const torchLight = currentLight.lights[lightIndex];
+                const torchTarget = currentLight.targets[lightIndex];
+                const torchHelper = currentLight.helpers[lightIndex] || null;
+                
+                console.log("Found torch light at index", lightIndex, ":", torchLight);
+                console.log("Found torch target:", torchTarget);
+                
+                // Connect the torch controller
+                torchController.attachToLight(torchLight, torchTarget, torchHelper);
+                console.log('Torch controller attached to light');
+            }
+        }
+    }
     
-    // Add a subtle ambient light to avoid completely dark areas
+    // Always add a subtle ambient light if not already present
     if (!scene.userData.ambientLight) {
         const ambientLight = new THREE.AmbientLight(0x2d3645, 0.5);
         scene.add(ambientLight);
@@ -177,9 +220,9 @@ function setupGUI() {
 
     // Room Selection
     gui.add(params, 'roomIndex', {
-        'Classic Grid': 0,
-        'Warm Tones': 1,
-        'Textured Room': 2
+        'Textured Room': 0,
+        'Classic Grid': 1,
+        'Warm Tones': 2
     }).name('Room Style').onChange((value) => {
         params.roomIndex = parseInt(value);
         setupSceneObjects(params.roomIndex);
@@ -204,6 +247,30 @@ function setupGUI() {
     });
     
     pixelationFolder.open();
+
+    const torchFolder = gui.addFolder('Torch Light Controls');
+    
+    torchFolder.add({ speed: 0.2 }, 'speed', 0.05, 0.5, 0.01)
+        .name('Movement Speed')
+        .onChange((value) => {
+            if (torchController) {
+                torchController.setOptions({ maxSpeed: value });
+            }
+        });
+    
+    torchFolder.add({ wobbleAmount: 0.05 }, 'wobbleAmount', 0, 0.2, 0.01)
+        .name('Wobble Amount')
+        .onChange((value) => {
+            if (torchController) {
+                torchController.setOptions({ wobbleAmount: value });
+            }
+        });
+    
+    // Instructions for users
+    torchFolder.add({ '': 'Use W, A, S, D to move the torch' }, '')
+        .name('Instructions');
+    
+    torchFolder.open();
 }
 
 
@@ -213,7 +280,11 @@ function animate() {
 
     const deltaTime = clock.getDelta();
 
-    controls.update(); // Only required if controls.enableDamping or controls.autoRotate are set
+    controls.update(); 
+
+    if (torchController) {
+        torchController.update(deltaTime);
+    }
 
     if (currentCube) {
         currentCube.update(deltaTime);
