@@ -1,42 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Three.js Room Switching</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js - Pixelation Pass</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
-        .controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 10; /* Ensure controls are above canvas */
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            font-family: sans-serif;
-        }
-        button {
-            margin-right: 5px;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
+        body { margin: 0; overflow: hidden; } /* Remove default margin and scrollbars */
+        canvas { display: block; } /* Remove extra space below canvas */
     </style>
 </head>
 <body>
-    <div class="controls">
-        Select Room:
-        <button id="showBrickRoom">Brick Walls</button>
-        <button id="showBlackRoom">Black Walls</button>
-    </div>
-
-
     <script type="module">
         import * as THREE from 'three';
         window.THREE = THREE; 
     </script>
-
-    <script type="module" src="./js/materials.js"></script>
-    <script type="module" src="./js/roomUtils.js"></script>
     <script type="module" src="./js/main.js"></script>
 </body>
 </html>

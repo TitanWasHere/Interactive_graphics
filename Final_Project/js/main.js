@@ -1,211 +1,230 @@
 import * as THREE from 'three';
-import { AmbientLight, PointLight } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
+import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js'; // Important for RectAreaLight
 
-import { createRoom, ROOM_CONSTANTS } from './roomUtils.js';
-import {
-    lineMaterial,
-    blackFloorMaterial,
-    blackWallMaterial,
-    grayFloorSidesMaterial,
-    brickWallMaterial,
-    brickFloorMaterial,
-    onBrickWallTextureLoaded,
-    onBrickFloorTextureLoaded
-} from './materials.js';
+import { Room } from './Room.js';
+import { RotatingCube } from './rotatingCube.js';
+import { SceneLight } from './sceneLight.js';
 
-// ----------- SETUP SCENE -----------
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x231b2d); 
+let scene, camera, renderer, composer, controls;
+let pixelatedPass;
+let currentRoom, currentCube, currentLight;
+let roomSize = 20;
+let wallHeight = 13;
 
-const frustumHeight = 15;
+const frustumHeight = 17;
 let aspect = window.innerWidth / window.innerHeight;
-let frustumWidth = frustumHeight * aspect;
+let frustumWidth = frustumHeight * aspect +3;
 
-const camera = new THREE.OrthographicCamera(
-    -frustumWidth / 2,
-    frustumWidth / 2,
-    frustumHeight / 2,
-    -frustumHeight / 2,
-    0.1,
-    1000
-);
-
-camera.position.set(15, 15, 15);
-camera.lookAt(0, 0, 0);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows often look better
-
-document.body.appendChild(renderer.domElement);
-
-// ----------- LIGHTS (Torch Effect - Conditional) -----------
-// Reduce ambient light significantly to make the scene darker overall when the torch is off
-const ambientLight = new AmbientLight(0x404040,5); // Lower intensity
-scene.add(ambientLight);
-
-// Point light representing the torch - create it but initially hide it
-const torchLight = new PointLight(0xe26309, 300, 6); // Color (Orange), Intensity, Distance
-// Position the light low and near one of the walls, as if mounted or held
-const lightX = -ROOM_CONSTANTS.floorWidth / 2 + ROOM_CONSTANTS.wallThickness + 0.5; // slightly in front of wall 2
-const lightY = ROOM_CONSTANTS.wallHeight / 2 + ROOM_CONSTANTS.floorHeight / 2 - 2; // around mid-height
-const lightZ = 0; 
-
-torchLight.position.set(lightX, lightY, lightZ);
-
-// Enable shadow casting for the torch light
-torchLight.castShadow = true;
-
-// Configure shadow camera for the point light
-torchLight.shadow.mapSize.width = 1024;
-torchLight.shadow.mapSize.height = 1024;
-torchLight.shadow.camera.near = 0.1;
-torchLight.shadow.camera.far = 20;
-torchLight.shadow.bias = -0.005;
-
-// --- Initially hide the torch light ---
-torchLight.visible = false;
-
-scene.add(torchLight); // Add the light to the scene always, control visibility
-
-
-
-// ----------- ROOM MANAGEMENT -----------
-let currentRoomGroup = null;
-let currentRoomObject = null;
-let currentRoomName = null;
-
-const roomConfigs = {
-    brick: {
-        name: 'brick',
-        floorTopMaterial: brickFloorMaterial,
-        floorSidesMaterial: grayFloorSidesMaterial,
-        wallMaterial: brickWallMaterial,
-        lineMaterial: lineMaterial
+const roomConfigurations = [
+    {
+        name: "Textured Room",
+        floorConfig: { 
+            type: 'texture', 
+            textureUrl: './../textures/floor_mold.jpg', 
+            textureRepeat: 1 
+        },
+        wallConfig: { 
+            type: 'texture', 
+            textureUrl: './../textures/brick_wall.jpg', 
+            textureRepeat: 3 
+        },
+        lightConfig: {
+            type: 'point',
+            color: 0xff8800,
+            intensity: 1000,
+            distance: 50,
+            angle: Math.PI / 16,
+            penumbra: 0.02,
+            decay: 2,
+            position: new THREE.Vector3(2, 10, 2),
+            target: new THREE.Vector3(100,10, 10),
+            castShadow: true
+        }
     },
-    black: {
-        name: 'black',
-        floorTopMaterial: blackFloorMaterial,
-        floorSidesMaterial: grayFloorSidesMaterial,
-        wallMaterial: blackWallMaterial,
-        lineMaterial: lineMaterial
-    }
+    {
+        name: "Classic Grid",
+        floorConfig: { type: 'colors', colors: [0x777777, 0x555555] },
+        wallConfig: { type: 'colors', colors: [0x555555, 0x444444] },
+        lightConfig: {
+            type: 'point',
+            color: 0xfffc9c,
+            intensity: 2,
+            distance: 30,
+            decay: 1.5,
+            position: new THREE.Vector3(0, 10, 0),
+            castShadow: true
+        }
+    },
+    {
+        name: "Warm Tones",
+        floorConfig: { type: 'colors', colors: [0xAA8866, 0x775533] },
+        wallConfig: { type: 'colors', colors: [0x775533, 0x553311] },
+        lightConfig: {
+            type: 'rect',
+            color: 0xFFEECC,
+            intensity: 5,
+            width: 10,
+            height: 10,
+            position: new THREE.Vector3(3, 8, 3)
+        }
+    },
+];
+
+
+const params = {
+    roomIndex: 0,
+    pixelSize: 4,
+    normalEdgeStrength: 0.3,
+    depthEdgeStrength: 0.4,
+    pixelAlignedPanning: true
 };
 
-/**
- * @param {string} roomName - The key of the room configuration (e.g., 'brick', 'black').
- */
-function showRoom(roomName) {
-     currentRoomName = roomName;
+const clock = new THREE.Clock();
+init();
 
-     const config = roomConfigs[roomName];
-     if (!config) {
-        console.error(`Room configuration "${roomName}" not found.`);
-        return;
-     }
+function init() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x282C34);
 
-     // Create the new room using the configuration materials
-     const roomObject = createRoom(
-         config.floorTopMaterial,
-         config.floorSidesMaterial,
-         config.wallMaterial,
-         config.lineMaterial
-     );
+    const camera = new THREE.OrthographicCamera(
+        -frustumWidth ,
+        frustumWidth ,
+        frustumHeight,
+        -frustumHeight,
+        0.1,
+        1000
+    );
+    camera.position.set(roomSize * 0.8, roomSize * 0.7, roomSize * 0.8);
+    camera.lookAt(0, roomSize * 0.2, 0); 
 
-     // --- Enable Shadows on Room Meshes ---
-     roomObject.floorMesh.receiveShadow = true;
-     roomObject.wall1Mesh.castShadow = true;
-     roomObject.wall2Mesh.castShadow = true;
-     
-
-     if (currentRoomGroup) {
-         scene.remove(currentRoomGroup);
-         // Dispose geometries/materials if necessary here
-     }
-
-     // Store references
-     currentRoomGroup = roomObject.group;
-     currentRoomObject = roomObject;
-     currentRoomObject.name = roomName;
-
-     // Position
-     currentRoomGroup.position.y = -2;
-
-     // Add to scene
-     scene.add(currentRoomGroup);
-
-     console.log(`Displayed room: ${roomName}`);
-
-     // --- Control Light Visibility based on the current room ---
-     if (roomName === 'brick') {
-         torchLight.visible = true;
-         // If you used the helper: pointLightHelper.visible = true;
-     } else {
-         torchLight.visible = false;
-         // If you used the helper: pointLightHelper.visible = false;
-     }
-}
-
-// ----------- TEXTURE LOAD HANDLING -----------
-onBrickWallTextureLoaded((loadedWallMaterial) => {
-    console.log("Received notification: Brick wall texture is ready.");
-    roomConfigs.brick.wallMaterial = loadedWallMaterial;
-
-    if (currentRoomObject && currentRoomObject.name === 'brick') {
-        console.log("Updating current brick room walls with loaded texture.");
-        currentRoomObject.wall1Mesh.material = loadedWallMaterial;
-        currentRoomObject.wall2Mesh.material = loadedWallMaterial;
-    }
-});
-
-onBrickFloorTextureLoaded((loadedFloorMaterial) => {
-    console.log("Received notification: Brick floor texture is ready.");
-    roomConfigs.brick.floorTopMaterial = loadedFloorMaterial;
-
-    if (currentRoomObject && currentRoomObject.name === 'brick') {
-        console.log("Updating current brick room floor top with loaded texture.");
-        if (Array.isArray(currentRoomObject.floorMesh.material) && currentRoomObject.floorMesh.material.length > 2) {
-             currentRoomObject.floorMesh.material[2] = loadedFloorMaterial;
-             currentRoomObject.floorMesh.material.needsUpdate = true;
-        } else {
-             console.warn("Floor mesh material is not an array or is too small to update index 2.");
-        }
-    }
-});
-
-
-// ----------- EVENT LISTENERS -----------
-document.getElementById('showBrickRoom').addEventListener('click', () => {
-    showRoom('brick');
-});
-
-document.getElementById('showBlackRoom').addEventListener('click', () => {
-    showRoom('black');
-});
-
-
-// ----------- RESIZE HANDLING -----------
-function onWindowResize() {
-    aspect = window.innerWidth / window.innerHeight;
-    frustumWidth = frustumHeight * aspect;
-    camera.left = -frustumWidth / 2;
-    camera.right = frustumWidth / 2;
-    camera.top = frustumHeight / 2;
-    camera.bottom = -frustumHeight / 2;
-    camera.updateProjectionMatrix();
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-}
-window.addEventListener('resize', onWindowResize);
-onWindowResize();
+    document.body.appendChild(renderer.domElement);
 
-// ----------- ANIMATION LOOP -----------
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true; 
+    controls.dampingFactor = 0.05;
+    controls.target.set(0, roomSize * 0.2, 0); 
+
+
+    RectAreaLightUniformsLib.init();
+
+    setupSceneObjects(params.roomIndex);
+
+    composer = new EffectComposer(renderer);
+    pixelatedPass = new RenderPixelatedPass(
+        params.pixelSize, scene, camera, {
+            normalEdgeStrength: params.normalEdgeStrength,
+            depthEdgeStrength: params.depthEdgeStrength
+        }
+    );
+    pixelatedPass.pixelAlignedPanning = params.pixelAlignedPanning;
+    composer.addPass(pixelatedPass);
+
+    setupGUI();
+
+    animate();
+
+    window.addEventListener('resize', onWindowResize);
+}
+
+function setupSceneObjects(roomIndex) {
+    if (currentRoom) currentRoom.dispose();
+    if (currentCube) currentCube.dispose();
+    if (currentLight) currentLight.dispose();
+
+    const config = roomConfigurations[roomIndex];
+
+    // Create Room with the configuration parameters
+    currentRoom = new Room(
+        scene,
+        roomSize,
+        wallHeight,
+        config.floorConfig,
+        config.wallConfig
+    );
+    
+    // Enable shadows for the room
+    currentRoom.getGroup().traverse((object) => {
+        if (object.isMesh) {
+            object.castShadow = true;
+            object.receiveShadow = true;
+        }
+    });
+    
+    currentCube = new RotatingCube(scene, new THREE.Vector3(0, 2, 0), 2);
+    currentCube.getMesh().castShadow = true;
+    
+    // Create light using the new flexible configuration
+    currentLight = new SceneLight(scene, config.lightConfig);
+    
+    // Add a subtle ambient light to avoid completely dark areas
+    if (!scene.userData.ambientLight) {
+        const ambientLight = new THREE.AmbientLight(0x2d3645, 0.5);
+        scene.add(ambientLight);
+        scene.userData.ambientLight = ambientLight;
+    }
+}
+
+
+function setupGUI() {
+    const gui = new GUI();
+
+    // Room Selection
+    gui.add(params, 'roomIndex', {
+        'Classic Grid': 0,
+        'Warm Tones': 1,
+        'Textured Room': 2
+    }).name('Room Style').onChange((value) => {
+        params.roomIndex = parseInt(value);
+        setupSceneObjects(params.roomIndex);
+    });
+    
+    // Pixelation Controls
+    const pixelationFolder = gui.addFolder('Pixelation Controls');
+    pixelationFolder.add(params, 'pixelSize', 1, 16, 1).name('Pixel Size').onChange((value) => {
+        pixelatedPass.setPixelSize(value);
+    });
+    
+    pixelationFolder.add(params, 'normalEdgeStrength', 0, 1, 0.05).name('Normal Edge Strength').onChange((value) => {
+        pixelatedPass.normalEdgeStrength = value;
+    });
+    
+    pixelationFolder.add(params, 'depthEdgeStrength', 0, 1, 0.05).name('Depth Edge Strength').onChange((value) => {
+        pixelatedPass.depthEdgeStrength = value;
+    });
+    
+    pixelationFolder.add(params, 'pixelAlignedPanning').name('Pixel Aligned Panning').onChange((value) => {
+        pixelatedPass.pixelAlignedPanning = value;
+    });
+    
+    pixelationFolder.open();
+}
+
+
+
 function animate() {
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+
+    const deltaTime = clock.getDelta();
+
+    controls.update(); // Only required if controls.enableDamping or controls.autoRotate are set
+
+    if (currentCube) {
+        currentCube.update(deltaTime);
+    }
+
+    composer.render();
 }
 
-animate();
-
-// ----------- Initial Room Display -----------
-showRoom('brick');
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight); // Update composer size too
+}
