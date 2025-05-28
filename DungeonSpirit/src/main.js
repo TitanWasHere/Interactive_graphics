@@ -19,7 +19,8 @@ function init(){
 
     // Create camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 10, 20);
+    camera.position.set(0, 20, 20);
+    
     
     // Create renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -32,7 +33,7 @@ function init(){
     composer.addPass(renderPass);
     
     // Create pixelated pass for post-processing
-    pixelatedPass = new RenderPixelatedPass(8, scene, camera);
+    pixelatedPass = new RenderPixelatedPass(3, scene, camera);
     composer.addPass(pixelatedPass);
 
     // Create controls

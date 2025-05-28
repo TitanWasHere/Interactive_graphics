@@ -25,7 +25,7 @@ class Room extends THREE.Group {
 
         this._startFloor();
         this._startWalls();
-        
+
     }
 
     _createCheckerboard(){
@@ -64,7 +64,7 @@ class Room extends THREE.Group {
             const texture = TextureLoader.load(config.textureUrl, (texture) => {
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(config.textureRepeat || 1, config.textureRepeat || 1);
+                texture.repeat.set(config.textureRepeatX || 3, config.textureRepeatY || 2);
                 texture.colorSpace = THREE.SRGBColorSpace;
             }, undefined, (err) => {
                 console.error('An error happened loading the texture:', err);
