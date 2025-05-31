@@ -1,47 +1,34 @@
 import * as THREE from 'three';
 import { StartRoom } from './rooms/StartRoom.js';
-import { RenderPixelatedPass } from 'three/examples/jsm/postprocessing/RenderPixelatedPass.js';
-import { OrbitControls } from 'three/examples/jsm/Addons.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { CameraManager } from './managers/CameraManager.js';
+import { SceneManager } from './managers/SceneManager.js';
+import { RenderManager } from './managers/RenderManager.js';
+import { ControlsManager } from './managers/ControlsManager.js';
+import { LightsManager } from './managers/LightsManager.js';
 
 let scene, camera, renderer, composer, controls;
 let pixelatedPass;
 let currentRoom;
 
+const sceneManager = new SceneManager();
+scene = sceneManager.getScene();
+const cameraManager = new CameraManager();
+camera = cameraManager.getCamera();
+
+const renderManager = new RenderManager(scene, camera);
+renderer = renderManager.getRenderer();
+composer = renderManager.getComposer();
+
+const controlsManager = new ControlsManager(camera, renderer.domElement);
+controls = controlsManager.getControls();
+
+//const lightsManager = new LightsManager(scene);
+
+
 init();
-animate(); // Start the animation loop
+animate(); 
 
 function init(){
-    // Create scene
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000); // Set a background color
-
-    // Create camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 20, 20);
-    
-    
-    // Create renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Set up composer and passes
-    composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    
-    // Create pixelated pass for post-processing
-    pixelatedPass = new RenderPixelatedPass(3, scene, camera);
-    composer.addPass(pixelatedPass);
-
-    // Create controls
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.25;
-    
-    // Initialize the start room
     currentRoom = new StartRoom();
     scene.add(currentRoom);
 

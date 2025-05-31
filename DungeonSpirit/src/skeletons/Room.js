@@ -198,6 +198,12 @@ class Room extends THREE.Group {
         this.clear();
     }
 
-    
+    getDimensions() {
+        return {
+            floorWidth: this.floorWidth,
+            floorHeight: this.floorHeight,
+            wallHeight: this.wallHeight
+        };
+    }
 }
 export { Room };
