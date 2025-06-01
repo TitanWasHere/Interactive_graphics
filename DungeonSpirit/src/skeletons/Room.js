@@ -128,7 +128,7 @@ class Room extends THREE.Group {
     addObject(object) {
         if (object instanceof THREE.Object3D) {
             this.add(object);
-            this.scene.add(object);
+            //this.scene.add(object);
         } else {
             console.error("Object must be an instance of THREE.Object3D");
         }
@@ -148,7 +148,10 @@ class Room extends THREE.Group {
         this._disposeMaterial(this.floorMesh.material);
         this.floorMesh.material = this._createMaterial(config);
     }
-
+    getLightsDefinition(){
+        return [];
+    }
+    
     setWall(config){
         if(!config.type){
             console.warn("No type specified for wall material, using default.");
@@ -190,10 +193,16 @@ class Room extends THREE.Group {
     dispose(){
         if(this.floorMesh){
             this._disposeMaterial(this.floorMesh.material);
+            this.remove(this.floorMesh);
+            this.floorMesh.geometry.dispose();
         }
         if(this.wallMesh){
             this._disposeMaterial(this.wallMesh.back.material);
             this._disposeMaterial(this.wallMesh.side.material);
+            this.remove(this.wallMesh.back);
+            this.remove(this.wallMesh.side);
+            this.wallMesh.back.geometry.dispose();
+            this.wallMesh.side.geometry.dispose();
         }
         this.clear();
     }

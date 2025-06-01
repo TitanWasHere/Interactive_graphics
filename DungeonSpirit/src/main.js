@@ -22,24 +22,23 @@ composer = renderManager.getComposer();
 const controlsManager = new ControlsManager(camera, renderer.domElement);
 controls = controlsManager.getControls();
 
-//const lightsManager = new LightsManager(scene);
-
+let lightsManager = new LightsManager(scene, renderer);
+let roomInstances = {};
 
 init();
 animate(); 
 
 function init(){
-    currentRoom = new StartRoom();
+    roomInstances['start_room'] = new StartRoom("start");
+    // roomInstances["room2"] = new Room("room2");
+    // roomInstances["room3"] = new Room("room3");
+
+    currentRoom = roomInstances['start_room'];
     scene.add(currentRoom);
 
-    // Add lighting - make it brighter
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-    scene.add(ambientLight);
+    lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition())
     
-    // Add directional light to see textures better
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    dirLight.position.set(1, 1, 1);
-    scene.add(dirLight);
+
     
     // Handle window resizing
     window.addEventListener('resize', onWindowResize);
