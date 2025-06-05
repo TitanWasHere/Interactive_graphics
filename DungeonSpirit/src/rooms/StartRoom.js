@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { Room } from './../skeletons/Room.js';
 
-class StartRoom extends Room {
+export class StartRoom extends Room {
     constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
         
         super(floorWidth, floorDepth, wallHeight, name, tileSize, tilePrimary, tileSecondary);
@@ -65,5 +65,3 @@ class StartRoom extends Room {
     }
 
 }
-
-export { StartRoom };

@@ -1,16 +1,28 @@
 import * as THREE from 'three';
+// -------- Rooms --------
+import { AltairRoom } from './rooms/AltairRoom.js';
 import { StartRoom } from './rooms/StartRoom.js';
+
+// -------- Managers --------
 import { CameraManager } from './managers/CameraManager.js';
 import { SceneManager } from './managers/SceneManager.js';
 import { RenderManager } from './managers/RenderManager.js';
 import { ControlsManager } from './managers/ControlsManager.js';
 import { LightsManager } from './managers/LightsManager.js';
+
+// -------- Player --------
+import { Spirit } from './player/Spirit.js';
+
+// -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 let scene, camera, renderer, composer, controls;
 let currentLightsFolder, gui;
 let pixelatedPass;
 let currentRoom;
+
+let clock;
+let spirit;
 
 const sceneManager = new SceneManager();
 scene = sceneManager.getScene();
@@ -28,16 +40,23 @@ let lightsManager = new LightsManager(scene, renderer);
 let roomInstances = {};
 
 init();
+
 setupGUI();
 animate(); 
 
 function init(){
-    roomInstances['start_room'] = new StartRoom("start");
-    // roomInstances["room2"] = new Room("room2");
-    // roomInstances["room3"] = new Room("room3");
+    clock = new THREE.Clock();
+    roomInstances['start_room'] = new StartRoom();
+    roomInstances['altair_room'] = new AltairRoom();
+    // Add other instances...
+    // roomInstances['another_room'] = new AnotherRoom();
+    // ....
+
+    spirit = new Spirit();
 
     currentRoom = roomInstances['start_room'];
     scene.add(currentRoom);
+    scene.add(spirit.mesh);
 
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition())
 
@@ -70,21 +89,16 @@ function onRoomChange(newRoomName) {
         return;
     }
 
-    // Rimuovi la stanza precedente dalla scena
+    // Remove the previous room from the scene
     scene.remove(currentRoom);
     
-    // Imposta la nuova stanza corrente
+    // Set the new current room
     currentRoom = roomInstances[newRoomName];
-    scene.add(currentRoom); // Aggiungi la nuova stanza alla scena
-
-    // Imposta le luci per la nuova stanza
-    lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
-
-    // Aggiorna la GUI con i controlli per le luci della nuova stanza
-    updateLightsGUI(currentRoom.name);
+    scene.add(currentRoom); 
 
     console.log(`Switched to ${currentRoom.name}`);
 }
+
 
 function updateLightsGUI(roomName) {
     // Rimuovi la cartella delle luci precedente se esiste
@@ -170,6 +184,11 @@ function updateLightsGUI(roomName) {
 
 function animate() {
     requestAnimationFrame(animate);
+
+    const deltaTime = clock.getDelta();
+    const elapsedTime = clock.getElapsedTime();
+    spirit.update(deltaTime, elapsedTime);
+
     controls.update();
     composer.render();
 }
