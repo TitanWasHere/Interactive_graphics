@@ -42,6 +42,7 @@ class Room extends THREE.Group {
     }
 
     _createMaterial(config){
+        console.log("Creating material with config:", config);
         if(!config)
             return new THREE.MeshStandardMaterial({
                 color: this.defaultColor,

@@ -10,7 +10,6 @@ import { RotatingCube } from './objects/SimpleGem.js';
 import { SceneLight } from './lights/SceneLight.js';
 import { TorchController } from './controllers/TorchController.js';
 
-
 let scene, camera, renderer, composer, controls;
 let pixelatedPass;
 let currentRoom, currentCube, currentLight;

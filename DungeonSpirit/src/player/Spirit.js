@@ -1,17 +1,19 @@
 import * as THREE from 'three';
 
 export class Spirit {
-    constructor(initPose = new THREE.Vector3(0, 2, 0)) {
+    constructor(initPose = new THREE.Vector3(0, 10, 0)) {
         this.initializeSpirit(initPose);
+        this.setupLights(); // This will now set up a single PointLight
         this.setupParticles();
         this.setupInput();
-    }
-
+        
+    }    
+    
     initializeSpirit(initPose) {
-        const sphereGeometry = new THREE.SphereGeometry(0.7, 16, 16);
+        const sphereGeometry = new THREE.SphereGeometry(0.7, 8, 8);
         const sphereMaterial = new THREE.MeshStandardMaterial({
-            color: 0xff2222,
-            emissive: 0xaa0000,
+            color: 0xff2222, // Main color of the spirit
+            emissive: 0xaa0000, // Emissive color, makes it glow
             roughness: 0.3,
             metalness: 0.1,
             transparent: true,
@@ -20,6 +22,9 @@ export class Spirit {
         
         this.mesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
         this.mesh.position.copy(initPose);
+        this.mesh.castShadow = true; // The spirit mesh itself can cast shadows if needed
+        
+        this.baseYPosition = initPose.y;
         
         this.floatAmplitude = 0.2;
         this.floatSpeed = 1.2;
@@ -32,8 +37,86 @@ export class Spirit {
         this.velocity = new THREE.Vector3();
     }
 
+    setupLights() {
+        this.lightDistance = 25;
+        
+        this.mainLight = new THREE.PointLight(
+            this.mesh.material.color,
+            6.0,                     
+            this.lightDistance,
+            1                        
+        );
+        
+        this.mainLight.position.copy(this.mesh.position);
+        this.mainLight.castShadow = true;
+        
+        this.mainLight.shadow.mapSize.width = 1024;
+        this.mainLight.shadow.mapSize.height = 1024;
+        this.mainLight.shadow.bias = -0.001;
+        this.mainLight.shadow.camera.near = 0.1;
+        this.mainLight.shadow.camera.far = this.lightDistance;
+
+        this.ambientContribution = new THREE.AmbientLight(
+            this.mesh.material.color,
+            0.3 
+        );
+
+        this.lightIntensityBase = 40.0;
+        this.lightIntensityVariation = 1.5;
+        this.lightAnimSpeed = 0.6;
+    }
+
+    updateLights(deltaTime, elapsedTime) {
+        if (!this.mainLight) return;
+
+        this.mainLight.position.copy(this.mesh.position);
+
+
+        const intensityPulse = Math.sin(elapsedTime * this.lightAnimSpeed * Math.PI) * this.lightIntensityVariation;
+        this.mainLight.intensity = this.lightIntensityBase + intensityPulse;
+
+
+        let currentLightColor = this.mesh.material.color.clone();
+
+
+        if (this.velocity.lengthSq() > 0.1) {
+            
+            const hue = (elapsedTime * 0.2) % 1;
+            const movingColorEffect = new THREE.Color().setHSL(
+                0.1 + hue * 0.8, 
+                0.8,             
+                0.7              
+            );
+            currentLightColor.lerp(movingColorEffect, 0.3); 
+        }
+        
+        this.mainLight.color.copy(currentLightColor);
+        
+        if (this.ambientContribution) {
+            this.ambientContribution.color.copy(currentLightColor);
+            this.ambientContribution.intensity = 0.2 + Math.sin(elapsedTime * 0.5) * 0.1;
+        }
+    }
+
+    // Enhanced setLightDistance method for room coverage
+    setLightDistance(distance) {
+        this.lightDistance = Math.max(distance, 20); // Minimum distance for room coverage
+        if (this.mainLight) {
+            this.mainLight.distance = this.lightDistance;
+            this.mainLight.shadow.camera.far = this.lightDistance;
+            this.mainLight.shadow.camera.updateProjectionMatrix();
+        }
+    }
+
+    // Enhanced setLightIntensity for room illumination
+    setLightIntensity(intensity) {
+        this.lightIntensityBase = Math.max(intensity, 2.0); 
+        this.lightIntensityVariation = this.lightIntensityBase * 0.3;
+    }
+
+
+
     setupParticles() {
-        // Bubbles
         this.bubbleGroup = new THREE.Group();
         this.mesh.add(this.bubbleGroup);
         
@@ -77,9 +160,9 @@ export class Spirit {
         );
         
         this.fireMaterials = [
-            new THREE.MeshBasicMaterial({ color: 0xff3300 }),
-            new THREE.MeshBasicMaterial({ color: 0xff8800 }),
-            new THREE.MeshBasicMaterial({ color: 0xffff00 }),
+            new THREE.MeshBasicMaterial({ color: 0xff3300, transparent: true }), 
+            new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true }),
+            new THREE.MeshBasicMaterial({ color: 0xffff00, transparent: true }),
         ];
     }
 
@@ -132,15 +215,22 @@ export class Spirit {
     }
 
     update(deltaTime, elapsedTime) {
+        if (this.mesh && this.mesh.material) {
+            const emissiveFactor = 0.5 + 0.3 * Math.sin(elapsedTime * 2);
+            this.mesh.material.emissiveIntensity = emissiveFactor;
+        }
+
+        this.updateLights(deltaTime, elapsedTime);
+        
         this.updateMovement(deltaTime, elapsedTime);
         this.updateBubbles(deltaTime, elapsedTime);
         this.updateFireParticles(deltaTime, elapsedTime);
-    }
-
+    }    
+    
     updateMovement(deltaTime, elapsedTime) {
         const floatY = Math.sin((elapsedTime + this.floatOffset) * Math.PI * this.floatSpeed) * 
                                      this.floatAmplitude;
-        this.mesh.position.y = floatY + 0.7;
+        this.mesh.position.y = this.baseYPosition + floatY; // Use baseYPosition instead of hardcoded value
 
         const pulse = 1 + Math.sin((elapsedTime + this.floatOffset) * Math.PI * this.pulseSpeed) * 
                                      this.pulseAmplitude;
@@ -192,7 +282,7 @@ export class Spirit {
         
         bubble.position.set(
             radius * Math.cos(angle),
-            -0.7 + Math.random() * 0.1,
+            -0.7 + Math.random() * 0.1, 
             radius * Math.sin(angle)
         );
         
@@ -232,13 +322,13 @@ export class Spirit {
 
     createFireParticle(elapsedTime) {
         const matIndex = Math.floor(Math.random() * this.fireMaterials.length);
-        const cube = new THREE.Mesh(this.fireGeometry, this.fireMaterials[matIndex].clone());
+        const cube = new THREE.Mesh(this.fireGeometry, this.fireMaterials[matIndex].clone()); 
         const angle = Math.random() * Math.PI * 2;
         const radius = Math.random() * this.fireConfig.radiusSpread;
         
         cube.position.set(
             radius * Math.cos(angle),
-            0.63,
+            0.63, 
             radius * Math.sin(angle)
         );
         
@@ -251,5 +341,23 @@ export class Spirit {
         particle.mesh.geometry.dispose();
         particle.mesh.material.dispose();
         this.fireParticles.splice(index, 1);
+    }
+
+    setLightIntensity(intensity) {
+        this.lightIntensityBase = intensity;
+    }
+
+    setColor(color) {
+        if (this.mesh && this.mesh.material) {
+            this.mesh.material.color.set(color);
+            this.mesh.material.emissive.set(new THREE.Color(color).multiplyScalar(0.5));
+        }
+    }    setLightDistance(distance){
+        this.lightDistance = distance;
+        if (this.mainLight) {
+            this.mainLight.distance = distance;
+            this.mainLight.shadow.camera.far = distance + 5; // Adjust shadow camera far plane
+            this.mainLight.shadow.camera.updateProjectionMatrix();
+        }
     }
 }

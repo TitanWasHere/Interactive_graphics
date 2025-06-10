@@ -9,6 +9,7 @@ import { SceneManager } from './managers/SceneManager.js';
 import { RenderManager } from './managers/RenderManager.js';
 import { ControlsManager } from './managers/ControlsManager.js';
 import { LightsManager } from './managers/LightsManager.js';
+import { AudioManager } from './managers/AudioManager.js';
 
 // -------- Player --------
 import { Spirit } from './player/Spirit.js';
@@ -16,10 +17,11 @@ import { Spirit } from './player/Spirit.js';
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
-let scene, camera, renderer, composer, controls;
+let scene, camera, renderer, composer, controls, audio;
 let currentLightsFolder, gui;
 let pixelatedPass;
 let currentRoom;
+let soundtrack;
 
 let clock;
 let spirit;
@@ -41,29 +43,42 @@ let roomInstances = {};
 
 init();
 
-setupGUI();
+
+
 animate(); 
 
 function init(){
     clock = new THREE.Clock();
-    roomInstances['start_room'] = new StartRoom();
-    roomInstances['altair_room'] = new AltairRoom();
+    
+    setupRooms();
+
+    setupAudio();
+
+    setupGUI();
+    
+    // Handle window resizing
+    window.addEventListener('resize', onWindowResize);
+}
+
+function setupAudio() {
+    audio = new AudioManager(camera);
+    //console.log("AudioManager initialized with track: " + audio.getTrack());
+    
+}
+
+function setupRooms(){
+    roomInstances['start_room'] = new StartRoom();    roomInstances['altair_room'] = new AltairRoom();
     // Add other instances...
     // roomInstances['another_room'] = new AnotherRoom();
-    // ....
-
-    spirit = new Spirit();
+    
+    spirit = new Spirit(new THREE.Vector3(0, 1, 0));
 
     currentRoom = roomInstances['start_room'];
     scene.add(currentRoom);
     scene.add(spirit.mesh);
+    scene.add(spirit.mainLight); // Add the light directly to the scene
 
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition())
-
-
-    
-    // Handle window resizing
-    window.addEventListener('resize', onWindowResize);
 }
 
 function setupGUI() {
@@ -80,7 +95,36 @@ function setupGUI() {
        .onChange(onRoomChange);
 
     // Aggiorna la GUI delle luci inizialmente per la stanza di partenza
-    updateLightsGUI(currentRoom.name);
+    updateLightsGUI(currentRoom.name);    const spiritFolder = gui.addFolder('Spirit Light');
+    
+    // Light color control
+    const spiritLightColor = { color: spirit.mesh.material.color.getHex() };
+    spiritFolder.addColor(spiritLightColor, 'color')
+        .name('Light Color')
+        .onChange((value) => {
+            if (spirit) {
+                spirit.setColor(value);
+            }
+        });
+      // Light intensity control
+    spiritFolder.add(spirit, 'lightIntensityBase', 0, 100, 0.1)
+        .name('Light Intensity')
+        .onChange((value) => {
+            if (spirit) {
+                spirit.setLightIntensity(value);
+            }
+        });
+
+    // Light distance control
+    spiritFolder.add(spirit, 'lightDistance', 0, 100, 0.1)
+        .name('Light Distance')
+        .onChange((value) => {
+            if (spirit) {
+                spirit.setLightDistance(value);
+            }
+        });
+        
+    spiritFolder.open();
 }
 
 function onRoomChange(newRoomName) {

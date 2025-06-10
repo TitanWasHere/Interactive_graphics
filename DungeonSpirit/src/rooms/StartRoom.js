@@ -13,7 +13,14 @@ export class StartRoom extends Room {
                 type: "texture",
                 textureUrl: floorTextureUrl,
                 textureRepeatX: textureRepeatFloor.x || floorWidth / 10,
-                textureRepeatY: textureRepeatFloor.y || floorDepth / 10 
+                textureRepeatY: textureRepeatFloor.y || floorDepth / 10 ,
+                floorMesh: new THREE.MeshStandardMaterial({
+                    color: 0x333333,          
+                    roughness: 0.1,           
+                    metalness: 0.5,           
+                    emissive: 0x111111,       
+                    emissiveIntensity: 0.1    
+                })
             });
         }
         // If no floorTextureUrl is provided, _startFloor() in Room's constructor will handle default.
