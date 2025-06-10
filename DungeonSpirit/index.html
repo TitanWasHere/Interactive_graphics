@@ -7,15 +7,36 @@
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; }
+        #interaction-prompt {
+            position: absolute;
+            bottom: 30px;
+            left: 50%; /* Step 1: Move left edge to center of parent */
+            transform: translateX(-50%); /* Step 2: Shift element left by half its own width */
+            
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            padding: 10px 15px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            
+            display: none;
+            
+            text-align: center; 
+            
+            box-sizing: border-box;
+            max-width: 90vw; 
+
+        }
     </style>
 </head>
 <body>
     <script type="module">
         import * as THREE from 'three';
-        
         window.THREE = THREE;
-         
     </script>
     <script type="module" src="./src/main.js"></script>
+
+    <div id='interaction-prompt'></div>
 </body>
 </html>

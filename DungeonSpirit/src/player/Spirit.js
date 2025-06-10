@@ -2,6 +2,11 @@ import * as THREE from 'three';
 
 export class Spirit {
     constructor(initPose = new THREE.Vector3(0, 10, 0)) {
+
+        this.interactionDistance = 2.5;
+        this.currentInteractableDoor = null; 
+        this.nearestDoor = null;
+
         this.initializeSpirit(initPose);
         this.setupLights(); // This will now set up a single PointLight
         this.setupParticles();
@@ -214,7 +219,33 @@ export class Spirit {
         }
     }
 
-    update(deltaTime, elapsedTime) {
+    checkNearbyDoors(room) {
+        this.currentInteractableDoor = null; // Reset
+        if (!room || !room.getInteractableDoors) return;
+
+        const interactableDoors = room.getInteractableDoors();
+        let closestDoor = null;
+        let minDistanceSq = this.interactionDistance * this.interactionDistance;
+
+        for (const doorData of interactableDoors) {
+            // Check distance to the door's visual center point
+            const distanceSq = this.mesh.position.distanceToSquared(doorData.mesh.position);
+            if (distanceSq < minDistanceSq) {
+                minDistanceSq = distanceSq;
+                closestDoor = doorData; 
+            }
+        }
+        if (closestDoor) {
+            this.currentInteractableDoor = closestDoor.definition; // Store the definition
+        }
+    }
+
+
+    update(deltaTime, elapsedTime, currentRoom) {
+
+        this.roomWidth = currentRoom.floorWidth;
+        this.roomDepth = currentRoom.floorDepth || this.roomWidth; // Account for rectangular rooms
+
         if (this.mesh && this.mesh.material) {
             const emissiveFactor = 0.5 + 0.3 * Math.sin(elapsedTime * 2);
             this.mesh.material.emissiveIntensity = emissiveFactor;
@@ -225,6 +256,7 @@ export class Spirit {
         this.updateMovement(deltaTime, elapsedTime);
         this.updateBubbles(deltaTime, elapsedTime);
         this.updateFireParticles(deltaTime, elapsedTime);
+        this.checkNearbyDoors(currentRoom);
     }    
     
     updateMovement(deltaTime, elapsedTime) {
@@ -245,8 +277,23 @@ export class Spirit {
 
         if (this.velocity.lengthSq() > 0) {
             this.velocity.normalize().multiplyScalar(this.movementSpeed * deltaTime);
-            this.mesh.position.x += this.velocity.x;
-            this.mesh.position.z += this.velocity.z;
+            
+            // Calculate new position
+            const newPosX = this.mesh.position.x + this.velocity.x;
+            const newPosZ = this.mesh.position.z + this.velocity.z;
+            
+            // Calculate room boundaries (assuming room is centered at origin)
+            const halfWidth = this.roomWidth / 2;
+            const halfDepth = this.roomDepth / 2;
+            const spiritRadius = 0.7; 
+            
+            // Constrain position within room boundaries
+            const constrainedX = Math.max(-halfWidth + spiritRadius, Math.min(halfWidth - spiritRadius, newPosX));
+            const constrainedZ = Math.max(-halfDepth + spiritRadius, Math.min(halfDepth - spiritRadius, newPosZ));
+            
+            // Apply constrained movement
+            this.mesh.position.x = constrainedX;
+            this.mesh.position.z = constrainedZ;
             
             const angle = Math.atan2(this.velocity.x, this.velocity.z);
             this.mesh.rotation.y = angle;

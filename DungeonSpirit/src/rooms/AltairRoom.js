@@ -4,7 +4,20 @@ import { Room } from './../skeletons/Room.js';
 export class AltairRoom extends Room {
     constructor(name = "Altair Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/brick_floor.jpg", wallTextureUrl = "../../textures/rock_bricks.png", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
         
-        super(floorWidth, floorDepth, wallHeight, name, tileSize, tilePrimary, tileSecondary);
+        const doorConfig = {
+            right: {
+                wallSide: "right",
+                offset: 0,
+                width: 4,
+                height: 0.3,
+                interactable: true,
+                targetRoom: "start_room",
+                nameTargetRoom: "Start Room",
+                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
+            },
+        };
+
+        super(floorWidth, floorDepth, wallHeight, name, doorConfig, tileSize, tilePrimary, tileSecondary);
         
         // Override default materials if textures are provided
         if (floorTextureUrl || floorTextureUrl == "") {

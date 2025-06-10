@@ -22,6 +22,8 @@ let currentLightsFolder, gui;
 let pixelatedPass;
 let currentRoom;
 let soundtrack;
+let interactionPromptElement;
+
 
 let clock;
 let spirit;
@@ -43,91 +45,102 @@ let roomInstances = {};
 
 init();
 
-
-
 animate(); 
 
 function init(){
     clock = new THREE.Clock();
     
     setupRooms();
-
     setupAudio();
-
     setupGUI();
+    setupInteraction(); 
     
-    // Handle window resizing
     window.addEventListener('resize', onWindowResize);
 }
 
 function setupAudio() {
     audio = new AudioManager(camera);
-    //console.log("AudioManager initialized with track: " + audio.getTrack());
-    
 }
 
 function setupRooms(){
-    roomInstances['start_room'] = new StartRoom();    roomInstances['altair_room'] = new AltairRoom();
-    // Add other instances...
-    // roomInstances['another_room'] = new AnotherRoom();
+    roomInstances['start_room'] = new StartRoom();    
+    roomInstances['altair_room'] = new AltairRoom(); // Make sure AltairRoom is instantiated
     
     spirit = new Spirit(new THREE.Vector3(0, 1, 0));
 
     currentRoom = roomInstances['start_room'];
     scene.add(currentRoom);
     scene.add(spirit.mesh);
-    scene.add(spirit.mainLight); // Add the light directly to the scene
+    scene.add(spirit.mainLight);
 
-    lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition())
+    lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
+}
+
+function setupInteraction() {
+    interactionPromptElement = document.getElementById('interaction-prompt');
+    window.addEventListener('keydown', handleInteractionKey);
+}
+
+function handleInteractionKey(event) {
+ 
+    if (event.key.toLowerCase() === 'i') { 
+        
+        if (spirit && spirit.currentInteractableDoor) {
+            enterDoor(spirit.currentInteractableDoor);
+        }
+    }
+}
+
+function enterDoor(doorDefinition) {
+    if (!doorDefinition || !doorDefinition.targetRoom) {
+        console.warn("Attempted to enter a door with no target room defined.");
+        return;
+    }
+
+    const targetRoomName = doorDefinition.targetRoom;
+    const targetSpawnPoint = doorDefinition.targetSpawnPoint; // This is a THREE.Vector3
+
+    if (roomInstances[targetRoomName]) {
+        console.log(`Entering door to ${targetRoomName}`);
+        onRoomChange(targetRoomName, targetSpawnPoint);
+    } else {
+        console.warn(`Target room "${targetRoomName}" not found!`);
+    }
 }
 
 function setupGUI() {
     gui = new GUI();
 
-    // Controlli per il cambio stanza
     const roomNames = Object.keys(roomInstances);
     const guiControls = {
-        currentRoomName: currentRoom.name // Inizializza con il nome della stanza corrente
+        currentRoomName: currentRoom.name 
     };
 
     gui.add(guiControls, 'currentRoomName', roomNames)
        .name('Choose Room')
-       .onChange(onRoomChange);
+       .onChange(newRoomName => onRoomChange(newRoomName, null)); // Change room via GUI, no specific spawn
 
-    // Aggiorna la GUI delle luci inizialmente per la stanza di partenza
-    updateLightsGUI(currentRoom.name);    const spiritFolder = gui.addFolder('Spirit Light');
+    updateLightsGUI(currentRoom.name);    
+    const spiritFolder = gui.addFolder('Spirit Light');
     
-    // Light color control
     const spiritLightColor = { color: spirit.mesh.material.color.getHex() };
     spiritFolder.addColor(spiritLightColor, 'color')
         .name('Light Color')
-        .onChange((value) => {
-            if (spirit) {
-                spirit.setColor(value);
-            }
-        });
-      // Light intensity control
+        .onChange((value) => { if (spirit) spirit.setColor(value); });
+    
     spiritFolder.add(spirit, 'lightIntensityBase', 0, 100, 0.1)
         .name('Light Intensity')
-        .onChange((value) => {
-            if (spirit) {
-                spirit.setLightIntensity(value);
-            }
-        });
+        .onChange((value) => { if (spirit) spirit.setLightIntensity(value); });
 
-    // Light distance control
     spiritFolder.add(spirit, 'lightDistance', 0, 100, 0.1)
         .name('Light Distance')
-        .onChange((value) => {
-            if (spirit) {
-                spirit.setLightDistance(value);
-            }
-        });
+        .onChange((value) => { if (spirit) spirit.setLightDistance(value); });
         
     spiritFolder.open();
 }
 
-function onRoomChange(newRoomName) {
+
+function onRoomChange(newRoomName, targetSpawnPoint) {
     if (newRoomName === currentRoom.name) {
         console.log(`Already in ${newRoomName}`);
         return;
@@ -139,6 +152,16 @@ function onRoomChange(newRoomName) {
     // Set the new current room
     currentRoom = roomInstances[newRoomName];
     scene.add(currentRoom); 
+
+    // Move the spirit to the spawn point if provided
+    if (targetSpawnPoint && spirit) {
+        spirit.mesh.position.copy(targetSpawnPoint);
+        console.log(`Spawned spirit at:`, targetSpawnPoint);
+    }
+
+    // Update lights for the new room
+    lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
+    updateLightsGUI(currentRoom.name);
 
     console.log(`Switched to ${currentRoom.name}`);
 }
@@ -198,26 +221,6 @@ function updateLightsGUI(roomName) {
                     light.groundColor.set(value);
                 });
         }
-        
-        /*if (light.position) {
-            lightFolder.add(light.position, 'x', -50, 50, 0.1)
-            .name('Position X')
-            .onChange(() => {
-                if (light.target) light.lookAt(light.target.position);
-            });
-            
-            lightFolder.add(light.position, 'y', -50, 50, 0.1)
-            .name('Position Y')
-            .onChange(() => {
-                if (light.target) light.lookAt(light.target.position);
-            });
-            
-            lightFolder.add(light.position, 'z', -50, 50, 0.1)
-            .name('Position Z')
-            .onChange(() => {
-                if (light.target) light.lookAt(light.target.position);
-            });
-        }*/
 
         
 
@@ -226,13 +229,26 @@ function updateLightsGUI(roomName) {
     });
 }
 
+function interact(){
+    if(spirit && spirit.currentInteractableDoor){
+        interactionPromptElement.style.display = 'block';
+        interactionPromptElement.textContent = `Press [I] to enter ${spirit.currentInteractableDoor.nameTargetRoom}`;
+
+    }else{
+        interactionPromptElement.style.display = 'none';
+        interactionPromptElement.textContent = '';
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
     const deltaTime = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
-    spirit.update(deltaTime, elapsedTime);
+    spirit.update(deltaTime, elapsedTime, currentRoom);
 
+    interact();
+    
     controls.update();
     composer.render();
 }

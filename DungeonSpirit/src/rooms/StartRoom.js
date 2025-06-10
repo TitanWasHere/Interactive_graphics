@@ -1,11 +1,34 @@
 import * as THREE from 'three';
 
 import { Room } from './../skeletons/Room.js';
+import { AltairRoom } from './AltairRoom.js';
 
 export class StartRoom extends Room {
     constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
-        
-        super(floorWidth, floorDepth, wallHeight, name, tileSize, tilePrimary, tileSecondary);
+
+        const doorConfig = {
+            left:{
+                wallSide: "left",
+                offset: 0,
+                width: 4,
+                height: 0.3,
+                interactable: true,
+                targetRoom: "altair_room",
+                nameTargetRoom: "Altair Room",
+                targetSpawnPoint: new THREE.Vector3(8, 1, 0), 
+            },
+            right: { 
+                wallSide: "right",
+                offset: 0,
+                width: 3,
+                height: 0.3,
+                interactable: false, // Red door
+
+            },
+
+        }
+
+        super(floorWidth, floorDepth, wallHeight, name, doorConfig, tileSize, tilePrimary, tileSecondary);
         
         // Override default materials if textures are provided
         if (floorTextureUrl) {
@@ -23,7 +46,6 @@ export class StartRoom extends Room {
                 })
             });
         }
-        // If no floorTextureUrl is provided, _startFloor() in Room's constructor will handle default.
 
         if (wallTextureUrl) {
             this.setWall({
@@ -41,31 +63,19 @@ export class StartRoom extends Room {
         return [
             {
                 type: 'AmbientLight',
-                color: 0xffffff, // Luce ambiente bianca
-                intensity: 0.6
+                color: 0xffffff, 
+                intensity: 0.0
             },
             {
                 type: 'DirectionalLight',
-                color: 0xffffff, // Luce direzionale bianca
-                intensity: 1.0,  // Intensità standard
-                position: { x: 5, y: 10, z: 5 }, // Da un angolo in alto
-                castShadow: true, // Abilita le ombre per questa luce
+                color: 0xffffff, 
+                intensity: 1.0,  
+                position: { x: 5, y: 10, z: 5 }, 
+                castShadow: true, 
                 shadowCamera: {
-                    left: -15, right: 15, top: 15, bottom: -15, // Area coperta dalle ombre
+                    left: -15, right: 15, top: 15, bottom: -15, 
                     near: 0.1, far: 50,
                     mapSize: { width: 1024, height: 1024 } // Risoluzione delle ombre
-                }
-            },
-            {
-                type: 'PointLight',
-                color: 0xffffaa, // Luce puntiforme calda
-                intensity: 0.6,
-                position: { x: 0, y: 5, z: 0 }, // Al centro della stanza, in alto
-                distance: 15,
-                decay: 2,
-                shadowCamera: {
-                    near: 0.1, far: 50,
-                    mapSize: { width: 512, height: 512 } // Risoluzione delle ombre
                 }
             }
         ];
