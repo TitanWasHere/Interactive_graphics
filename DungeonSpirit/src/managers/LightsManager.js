@@ -80,7 +80,7 @@ export class LightsManager {
             light.visible = true;
         }
         this.currentRoomName = roomName;
-        console.log(`Lights for room "${roomName}" set.`);
+        //console.log(`Lights for room "${roomName}" set.`);
 
     }
 

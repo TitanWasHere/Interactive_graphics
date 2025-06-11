@@ -47,80 +47,78 @@ class Room extends THREE.Group {
         });
     }
 
-    // In skeletons/Room.js
-
-_createDoors(doorConfig) {
-    if(!doorConfig || Object.keys(doorConfig).length === 0) {
-        return;
-    }
-
-    // Position doors on the floor surface instead of walls
-    const doorYPosition = 0.01; // Just slightly above the floor to avoid z-fighting
-
-    for(let doorDef in doorConfig) {
-        doorDef = doorConfig[doorDef];
-        console.log(`Creating door with definition: ${doorDef}`);
-        
-        // Create door geometry as a horizontal plane (on the floor)
-        const doorGeometry = new THREE.PlaneGeometry(doorDef.width, doorDef.height || 2); // Use height from config or default
-        const doorMaterial = new THREE.MeshBasicMaterial({
-            color: doorDef.interactable ? 0x00ff00 : 0xff0000, 
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.8 // Make it slightly transparent so it's clearly a floor indicator
-        });
-        const doorMesh = new THREE.Mesh(doorGeometry, doorMaterial);
-
-        // Rotate the door to lay flat on the floor
-        doorMesh.rotation.x = -Math.PI / 2; // Rotate 90 degrees to lay flat
-
-        switch(doorDef.wallSide) {
-            case 'back':
-                doorMesh.position.set(
-                    doorDef.offset || 0,
-                    doorYPosition,
-                    -this.floorHeight / 2 + (doorDef.height || 2) / 2 // Position near back wall
-                );
-                break;
-                
-            case 'front':
-                doorMesh.position.set(
-                    doorDef.offset || 0,
-                    doorYPosition,
-                    this.floorHeight / 2 - (doorDef.height || 2) / 2 // Position near front wall
-                );
-                break;
-                
-            case 'left':
-                doorMesh.position.set(
-                    -this.floorWidth / 2 + (doorDef.height || 2) / 2, // Position near left wall
-                    doorYPosition,
-                    doorDef.offset || 0
-                );
-                break;
-                
-            case 'right':
-                doorMesh.position.set(
-                    this.floorWidth / 2 - (doorDef.height || 2) / 2, // Position near right wall
-                    doorYPosition,
-                    doorDef.offset || 0
-                );
-                break;
-                
-            default:
-                console.warn(`Unknown wallSide: ${doorDef.wallSide} for a door.`);
-                doorGeometry.dispose();
-                doorMaterial.dispose(); 
-                return; 
+    _createDoors(doorConfig) {
+        if(!doorConfig || Object.keys(doorConfig).length === 0) {
+            return;
         }
-        
-        this.doors.push({
-            mesh: doorMesh,
-            definition: doorDef
-        });
-        this.add(doorMesh);
+
+        // Position doors on the floor surface instead of walls
+        const doorYPosition = 0.01; // Just slightly above the floor to avoid z-fighting
+
+        for(let doorDef in doorConfig) {
+            doorDef = doorConfig[doorDef];
+            console.log(`Creating door with definition: ${doorDef}`);
+            
+            // Create door geometry as a horizontal plane (on the floor)
+            const doorGeometry = new THREE.PlaneGeometry(doorDef.width, doorDef.height || 2); // Use height from config or default
+            const doorMaterial = new THREE.MeshBasicMaterial({
+                color: doorDef.interactable ? 0x00ff00 : 0xff0000, 
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.8 // Make it slightly transparent so it's clearly a floor indicator
+            });
+            const doorMesh = new THREE.Mesh(doorGeometry, doorMaterial);
+
+            // Rotate the door to lay flat on the floor
+            doorMesh.rotation.x = -Math.PI / 2; // Rotate 90 degrees to lay flat
+
+            switch(doorDef.wallSide) {
+                case 'back':
+                    doorMesh.position.set(
+                        doorDef.offset || 0,
+                        doorYPosition,
+                        -this.floorHeight / 2 + (doorDef.height || 2) / 2 // Position near back wall
+                    );
+                    break;
+                    
+                case 'front':
+                    doorMesh.position.set(
+                        doorDef.offset || 0,
+                        doorYPosition,
+                        this.floorHeight / 2 - (doorDef.height || 2) / 2 // Position near front wall
+                    );
+                    break;
+                    
+                case 'left':
+                    doorMesh.position.set(
+                        -this.floorWidth / 2 + (doorDef.height || 2) / 2, // Position near left wall
+                        doorYPosition,
+                        doorDef.offset || 0
+                    );
+                    break;
+                    
+                case 'right':
+                    doorMesh.position.set(
+                        this.floorWidth / 2 - (doorDef.height || 2) / 2, // Position near right wall
+                        doorYPosition,
+                        doorDef.offset || 0
+                    );
+                    break;
+                    
+                default:
+                    console.warn(`Unknown wallSide: ${doorDef.wallSide} for a door.`);
+                    doorGeometry.dispose();
+                    doorMaterial.dispose(); 
+                    return; 
+            }
+            
+            this.doors.push({
+                mesh: doorMesh,
+                definition: doorDef
+            });
+            this.add(doorMesh);
+        }
     }
-}
 
     
     _createDoors(doorConfig) {
@@ -195,9 +193,7 @@ _createDoors(doorConfig) {
             this.add(doorMesh);
         }
     }
-    getInteractableDoors() {
-        return this.doors.filter(door => door.definition.interactable);
-    }
+    
 
     _createMaterial(config){
         //console.log("Creating material with config:", config);
@@ -332,6 +328,36 @@ _createDoors(doorConfig) {
             this.wallMesh.back.material = material;
             this.wallMesh.side.material = material;
         }
+    }
+
+    setInteractableDoor(doorName){
+        if(!this.doors || this.doors.length === 0) {
+            console.warn("No doors defined in this room.");
+            return;
+        }
+        if(!doorName || typeof doorName !== 'string') {
+            console.warn("No door name provided to set as interactable.");
+            return;
+        }
+
+        if(doorName != "left" && doorName != "right" && doorName != "back" && doorName != "front") {
+            console.warn(`Invalid door name: ${doorName}. Valid names are 'left', 'right', 'back', 'front'.`);
+            return;
+        }
+
+        const door = this.doors.find(d => d.definition && d.definition.wallSide === doorName);
+        if(!door) {
+            console.warn(`No door found with name: ${doorName}`);
+            return;
+        }
+        door.mesh.material.color.set(0x00ff00);
+        door.mesh.material.transparent = true;
+        door.mesh.material.opacity = 0.8; 
+        door.definition.interactable = true; 
+    }
+
+    getInteractableDoors() {
+        return this.doors.filter(door => door.definition);
     }
 
     _disposeMaterial(material) {

@@ -1,14 +1,15 @@
 import * as THREE from 'three';
+import { Inventory } from './Inventory.js';
 
 export class Spirit {
     constructor(initPose = new THREE.Vector3(0, 10, 0)) {
-
+        this.inventory = new Inventory();
         this.interactionDistance = 2.5;
         this.currentInteractableDoor = null; 
         this.nearestDoor = null;
 
         this.initializeSpirit(initPose);
-        this.setupLights(); // This will now set up a single PointLight
+        this.setupLights(); 
         this.setupParticles();
         this.setupInput();
         
@@ -34,12 +35,16 @@ export class Spirit {
         this.floatAmplitude = 0.2;
         this.floatSpeed = 1.2;
         this.floatOffset = Math.random() * Math.PI * 2;
-        
-        this.pulseAmplitude = 0.15;
+          this.pulseAmplitude = 0.15;
         this.pulseSpeed = 1.0;
         
         this.movementSpeed = 8.0;
         this.velocity = new THREE.Vector3();
+        
+        this.acceleration = 15.0; 
+        this.deceleration = 12.0;
+        this.currentVelocity = new THREE.Vector3(); 
+        this.targetVelocity = new THREE.Vector3(); 
     }
 
     setupLights() {
@@ -69,43 +74,27 @@ export class Spirit {
         this.lightIntensityBase = 40.0;
         this.lightIntensityVariation = 1.5;
         this.lightAnimSpeed = 0.6;
-    }
-
+    }    
+    
     updateLights(deltaTime, elapsedTime) {
         if (!this.mainLight) return;
 
         this.mainLight.position.copy(this.mesh.position);
 
-
         const intensityPulse = Math.sin(elapsedTime * this.lightAnimSpeed * Math.PI) * this.lightIntensityVariation;
         this.mainLight.intensity = this.lightIntensityBase + intensityPulse;
 
-
-        let currentLightColor = this.mesh.material.color.clone();
-
-
-        if (this.velocity.lengthSq() > 0.1) {
-            
-            const hue = (elapsedTime * 0.2) % 1;
-            const movingColorEffect = new THREE.Color().setHSL(
-                0.1 + hue * 0.8, 
-                0.8,             
-                0.7              
-            );
-            currentLightColor.lerp(movingColorEffect, 0.3); 
-        }
-        
-        this.mainLight.color.copy(currentLightColor);
+        this.mainLight.color.copy(this.mesh.material.color);
         
         if (this.ambientContribution) {
-            this.ambientContribution.color.copy(currentLightColor);
+            this.ambientContribution.color.copy(this.mesh.material.color);
             this.ambientContribution.intensity = 0.2 + Math.sin(elapsedTime * 0.5) * 0.1;
         }
     }
 
     // Enhanced setLightDistance method for room coverage
     setLightDistance(distance) {
-        this.lightDistance = Math.max(distance, 20); // Minimum distance for room coverage
+        this.lightDistance = Math.max(distance, 20); 
         if (this.mainLight) {
             this.mainLight.distance = this.lightDistance;
             this.mainLight.shadow.camera.far = this.lightDistance;
@@ -113,7 +102,6 @@ export class Spirit {
         }
     }
 
-    // Enhanced setLightIntensity for room illumination
     setLightIntensity(intensity) {
         this.lightIntensityBase = Math.max(intensity, 2.0); 
         this.lightIntensityVariation = this.lightIntensityBase * 0.3;
@@ -220,7 +208,7 @@ export class Spirit {
     }
 
     checkNearbyDoors(room) {
-        this.currentInteractableDoor = null; // Reset
+        this.currentInteractableDoor = null; 
         if (!room || !room.getInteractableDoors) return;
 
         const interactableDoors = room.getInteractableDoors();
@@ -236,7 +224,7 @@ export class Spirit {
             }
         }
         if (closestDoor) {
-            this.currentInteractableDoor = closestDoor.definition; // Store the definition
+            this.currentInteractableDoor = closestDoor.definition;
         }
     }
 
@@ -244,7 +232,7 @@ export class Spirit {
     update(deltaTime, elapsedTime, currentRoom) {
 
         this.roomWidth = currentRoom.floorWidth;
-        this.roomDepth = currentRoom.floorDepth || this.roomWidth; // Account for rectangular rooms
+        this.roomDepth = currentRoom.floorDepth || this.roomWidth; 
 
         if (this.mesh && this.mesh.material) {
             const emissiveFactor = 0.5 + 0.3 * Math.sin(elapsedTime * 2);
@@ -258,46 +246,50 @@ export class Spirit {
         this.updateFireParticles(deltaTime, elapsedTime);
         this.checkNearbyDoors(currentRoom);
     }    
-    
+      
     updateMovement(deltaTime, elapsedTime) {
-        const floatY = Math.sin((elapsedTime + this.floatOffset) * Math.PI * this.floatSpeed) * 
-                                     this.floatAmplitude;
-        this.mesh.position.y = this.baseYPosition + floatY; // Use baseYPosition instead of hardcoded value
+        const floatY = Math.sin((elapsedTime + this.floatOffset) * Math.PI * this.floatSpeed) * this.floatAmplitude;
+        this.mesh.position.y = this.baseYPosition + floatY; 
 
-        const pulse = 1 + Math.sin((elapsedTime + this.floatOffset) * Math.PI * this.pulseSpeed) * 
-                                     this.pulseAmplitude;
+        const pulse = 1 + Math.sin((elapsedTime + this.floatOffset) * Math.PI * this.pulseSpeed) * this.pulseAmplitude;
         this.mesh.scale.set(pulse, pulse, pulse);
 
-        this.velocity.set(0, 0, 0);
+        this.targetVelocity.set(0, 0, 0);
 
-        if (this.keys.forward) this.velocity.z -= 1;
-        if (this.keys.backward) this.velocity.z += 1;
-        if (this.keys.left) this.velocity.x -= 1;
-        if (this.keys.right) this.velocity.x += 1;
+        if (this.keys.forward) this.targetVelocity.z -= 1;
+        if (this.keys.backward) this.targetVelocity.z += 1;
+        if (this.keys.left) this.targetVelocity.x -= 1;
+        if (this.keys.right) this.targetVelocity.x += 1;
 
-        if (this.velocity.lengthSq() > 0) {
-            this.velocity.normalize().multiplyScalar(this.movementSpeed * deltaTime);
+        if (this.targetVelocity.lengthSq() > 0) {
+            this.targetVelocity.normalize().multiplyScalar(this.movementSpeed);
+        }
+
+        const isMoving = this.targetVelocity.lengthSq() > 0;
+        const lerpSpeed = isMoving ? this.acceleration : this.deceleration;
+        
+        this.currentVelocity.lerp(this.targetVelocity, lerpSpeed * deltaTime);
+
+        // Apply movement if there's actual velocity
+        if (this.currentVelocity.lengthSq() > 0.01) {
+            const newPosX = this.mesh.position.x + this.currentVelocity.x * deltaTime;
+            const newPosZ = this.mesh.position.z + this.currentVelocity.z * deltaTime;
             
-            // Calculate new position
-            const newPosX = this.mesh.position.x + this.velocity.x;
-            const newPosZ = this.mesh.position.z + this.velocity.z;
-            
-            // Calculate room boundaries (assuming room is centered at origin)
             const halfWidth = this.roomWidth / 2;
             const halfDepth = this.roomDepth / 2;
             const spiritRadius = 0.7; 
             
-            // Constrain position within room boundaries
             const constrainedX = Math.max(-halfWidth + spiritRadius, Math.min(halfWidth - spiritRadius, newPosX));
             const constrainedZ = Math.max(-halfDepth + spiritRadius, Math.min(halfDepth - spiritRadius, newPosZ));
             
-            // Apply constrained movement
             this.mesh.position.x = constrainedX;
             this.mesh.position.z = constrainedZ;
             
-            const angle = Math.atan2(this.velocity.x, this.velocity.z);
+            const angle = Math.atan2(this.currentVelocity.x, this.currentVelocity.z);
             this.mesh.rotation.y = angle;
         }
+
+        this.velocity.copy(this.currentVelocity);
     }
 
     updateBubbles(deltaTime, elapsedTime) {
@@ -407,4 +399,10 @@ export class Spirit {
             this.mainLight.shadow.camera.updateProjectionMatrix();
         }
     }
+
+    getInventory() {
+        return this.inventory;
+    }
+
+    
 }

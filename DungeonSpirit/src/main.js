@@ -51,16 +51,13 @@ function init(){
     clock = new THREE.Clock();
     
     setupRooms();
-    setupAudio();
     setupGUI();
     setupInteraction(); 
-    
+
     window.addEventListener('resize', onWindowResize);
 }
 
-function setupAudio() {
-    audio = new AudioManager(camera);
-}
+
 
 function setupRooms(){
     roomInstances['start_room'] = new StartRoom();    
@@ -98,10 +95,10 @@ function enterDoor(doorDefinition) {
     }
 
     const targetRoomName = doorDefinition.targetRoom;
-    const targetSpawnPoint = doorDefinition.targetSpawnPoint; // This is a THREE.Vector3
+    const targetSpawnPoint = doorDefinition.targetSpawnPoint;
 
     if (roomInstances[targetRoomName]) {
-        console.log(`Entering door to ${targetRoomName}`);
+        //console.log(`Entering door to ${targetRoomName}`);
         onRoomChange(targetRoomName, targetSpawnPoint);
     } else {
         console.warn(`Target room "${targetRoomName}" not found!`);
@@ -111,16 +108,29 @@ function enterDoor(doorDefinition) {
 function setupGUI() {
     gui = new GUI();
 
-    const roomNames = Object.keys(roomInstances);
-    const guiControls = {
-        currentRoomName: currentRoom.name 
+    audio = new AudioManager(camera);
+    
+    const audioFolder = gui.addFolder('Audio Controls');
+    
+    const audioControls = {
+        playPause: () => {
+            audio.togglePlayPause();
+        },
+        status: 'Stopped' // This will show the current status
     };
+    
+    audioFolder.add(audioControls, 'playPause').name('Play/Pause Music');
+    
+    // Volume control
+    audioFolder.add(audio, 'volume', 0, 1, 0.01)
+        .name('Volume')
+        .onChange((value) => {
+            audio.setVolume(value);
+        });
+    
 
-    gui.add(guiControls, 'currentRoomName', roomNames)
-       .name('Choose Room')
-       .onChange(newRoomName => onRoomChange(newRoomName, null)); // Change room via GUI, no specific spawn
+    audioFolder.open();
 
-    updateLightsGUI(currentRoom.name);    
     const spiritFolder = gui.addFolder('Spirit Light');
     
     const spiritLightColor = { color: spirit.mesh.material.color.getHex() };
@@ -137,6 +147,18 @@ function setupGUI() {
         .onChange((value) => { if (spirit) spirit.setLightDistance(value); });
         
     spiritFolder.open();
+
+    const roomNames = Object.keys(roomInstances);
+    const guiControls = {
+        currentRoomName: currentRoom.name 
+    };
+
+    gui.add(guiControls, 'currentRoomName', roomNames)
+       .name('Choose Room')
+       .onChange(newRoomName => onRoomChange(newRoomName, null)); 
+
+    updateLightsGUI(currentRoom.name);
+    
 }
 
 
@@ -146,34 +168,40 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
         return;
     }
 
-    // Remove the previous room from the scene
     scene.remove(currentRoom);
     
-    // Set the new current room
     currentRoom = roomInstances[newRoomName];
     scene.add(currentRoom); 
 
-    // Move the spirit to the spawn point if provided
     if (targetSpawnPoint && spirit) {
         spirit.mesh.position.copy(targetSpawnPoint);
-        console.log(`Spawned spirit at:`, targetSpawnPoint);
+        //console.log(`Spawned spirit at:`, targetSpawnPoint);
     }
 
     // Update lights for the new room
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
     updateLightsGUI(currentRoom.name);
 
-    console.log(`Switched to ${currentRoom.name}`);
+    //console.log(`Switched to ${currentRoom.name}`);
 }
 
 
 function updateLightsGUI(roomName) {
-    // Rimuovi la cartella delle luci precedente se esiste
-    if (currentLightsFolder) {
-        gui.removeFolder(currentLightsFolder); // Usiamo removeFolder anziché destroy per pulire meglio
-    }
 
-    // Crea una nuova cartella per le luci di questa stanza
+    /*let existingFolder = false;
+    for (const folder of gui.folders) {
+        if (folder._title === `Lights: ${roomName}`) {
+            currentLightsFolder = folder;
+            return
+        }
+    }*/
+
+    if( currentLightsFolder ) {
+        currentLightsFolder.destroy();
+        currentLightsFolder = null;
+    }
+    
+
     currentLightsFolder = gui.addFolder(`Lights: ${roomName}`);
 
     // Ottieni le luci attive dal LightsManager
@@ -229,15 +257,14 @@ function updateLightsGUI(roomName) {
     });
 }
 
-function interact(){
-    if(spirit && spirit.currentInteractableDoor){
-        interactionPromptElement.style.display = 'block';
-        interactionPromptElement.textContent = `Press [I] to enter ${spirit.currentInteractableDoor.nameTargetRoom}`;
+function interactDoor(){
 
-    }else{
-        interactionPromptElement.style.display = 'none';
-        interactionPromptElement.textContent = '';
-    }
+    interactionPromptElement.style.display = 'block';
+    if(spirit.currentInteractableDoor.interactable)
+        interactionPromptElement.textContent = `Press [I] to enter ${spirit.currentInteractableDoor.nameTargetRoom}`;
+    else
+        interactionPromptElement.textContent = `This door is locked.`;
+    
 }
 
 function animate() {
@@ -247,7 +274,12 @@ function animate() {
     const elapsedTime = clock.getElapsedTime();
     spirit.update(deltaTime, elapsedTime, currentRoom);
 
-    interact();
+    if(spirit.currentInteractableDoor)
+        interactDoor();
+    else{
+        interactionPromptElement.style.display = 'none';
+        interactionPromptElement.textContent = '';
+    }
     
     controls.update();
     composer.render();
