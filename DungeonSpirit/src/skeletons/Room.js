@@ -354,6 +354,7 @@ class Room extends THREE.Group {
         door.mesh.material.transparent = true;
         door.mesh.material.opacity = 0.8; 
         door.definition.interactable = true; 
+        door.toUnlock = null; 
     }
 
     getInteractableDoors() {

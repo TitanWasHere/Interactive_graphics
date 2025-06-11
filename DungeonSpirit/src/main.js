@@ -19,11 +19,12 @@ import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
 let scene, camera, renderer, composer, controls, audio;
 let currentLightsFolder, gui;
-let pixelatedPass;
 let currentRoom;
-let soundtrack;
 let interactionPromptElement;
 
+// ------- Player state -------
+let unlockable = false;
+let inventory;
 
 let clock;
 let spirit;
@@ -63,14 +64,29 @@ function setupRooms(){
     roomInstances['start_room'] = new StartRoom();    
     roomInstances['altair_room'] = new AltairRoom(); // Make sure AltairRoom is instantiated
     
-    spirit = new Spirit(new THREE.Vector3(0, 1, 0));
-
     currentRoom = roomInstances['start_room'];
     scene.add(currentRoom);
-    scene.add(spirit.mesh);
-    scene.add(spirit.mainLight);
+
+    setupPlayer();
+    
 
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
+}
+
+function setupPlayer(){
+    
+    spirit = new Spirit(new THREE.Vector3(0, 1, 0));
+
+    inventory = spirit.getInventory();
+    inventory.addItem({
+        id: "1",
+        name: "Key",
+        description: "A small key that unlocks a door.",
+        quantity: 1
+    })
+    
+    scene.add(spirit.mesh);
+    scene.add(spirit.mainLight);
 }
 
 function setupInteraction() {
@@ -81,9 +97,16 @@ function setupInteraction() {
 function handleInteractionKey(event) {
  
     if (event.key.toLowerCase() === 'i') { 
-        
-        if (spirit && spirit.currentInteractableDoor) {
+        if(!spirit || !spirit.currentInteractableDoor) {
+            return;
+        }
+        if (spirit.currentInteractableDoor.interactable) {
             enterDoor(spirit.currentInteractableDoor);
+        }
+        if(spirit.currentInteractableDoor.toUnlock && unlockable) {
+            currentRoom.setInteractableDoor(spirit.currentInteractableDoor.wallSide);
+            inventory.removeItem(spirit.currentInteractableDoor.toUnlock);
+            unlockable = false;
         }
     }
 }
@@ -262,8 +285,18 @@ function interactDoor(){
     interactionPromptElement.style.display = 'block';
     if(spirit.currentInteractableDoor.interactable)
         interactionPromptElement.textContent = `Press [I] to enter ${spirit.currentInteractableDoor.nameTargetRoom}`;
-    else
-        interactionPromptElement.textContent = `This door is locked.`;
+    else{
+        const toUnlock = spirit.currentInteractableDoor.toUnlock;
+
+        if(toUnlock && inventory.getItem(toUnlock)){
+            unlockable = true;
+            interactionPromptElement.textContent = `Press [I] to unlock ${spirit.currentInteractableDoor.nameTargetRoom}`;
+        }else{
+            unlockable = false;
+            interactionPromptElement.textContent = `This door is locked.`;
+        }
+
+    }
     
 }
 
@@ -279,6 +312,7 @@ function animate() {
     else{
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
+        unlockable = false;
     }
     
     controls.update();

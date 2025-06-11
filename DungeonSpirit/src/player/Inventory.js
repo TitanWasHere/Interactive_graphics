@@ -7,20 +7,31 @@ export class Inventory {
         // - key: itemId
         // - value: item object with properties like name, description, quantity, etc.
 
-        this.items = {};
+        this.items = {
+            /*"1": {
+                id: "1",
+                name: "Key",
+                description: "A small key that unlocks a door.",
+                quantity: 1
+            }*/
+        };
         
     }
 
     addItem(item){
-        if(!item.id || !item.name || !item.value) {
+        if(!item.id || !item.name) {
             console.error("Item must have an id and a name and a value.");
             return;
         }
         if(this.items[item.id]) {
-            this.items[item.id].quantity += item.value.quantity;
+            this.items[item.id].quantity += item.quantity;
         } else {
             this.items[item.id] = item;
+            if(!this.items[item.id].quantity) {
+                this.items[item.id].quantity = 1; 
+            }
         }
+        console.log("items:", this.items);
     }
 
     removeItem(itemId, quantity = 1) {

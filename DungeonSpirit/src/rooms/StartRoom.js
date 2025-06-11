@@ -23,7 +23,10 @@ export class StartRoom extends Room {
                 width: 3,
                 height: 0.3,
                 interactable: false, // Red door
-
+                targetRoom: "altair_room",
+                nameTargetRoom: "Altair Room",
+                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
+                toUnlock: "1", // ID 1 for key
             },
 
         }
