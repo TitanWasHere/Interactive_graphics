@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 import { Room } from './../skeletons/Room.js';
+import { Column } from '../objects/non_interactable/Column.js';
+import { Altar } from '../objects/non_interactable/Altar.js';
 import { AltairRoom } from './AltairRoom.js';
 
 export class StartRoom extends Room {
@@ -59,7 +61,30 @@ export class StartRoom extends Room {
             });
         }
 
+        this.setupRoom();
+    }
 
+    setupRoom(){
+        this.#setupColumns();
+        this.addObject(new Altar());
+    }
+
+    #setupColumns(){
+        const base_width = 2;
+        const base_height = 1;
+
+        //this.column = new Column(new THREE.Vector3(0, 0, -this.floorWidth / 2 + base_width / 2), base_width, base_height, base_width * 3/5, this.wallHeight - base_height*2 , base_width, base_height );
+        this.column = new Column(new THREE.Vector3(-this.floorWidth/2 + base_width / 2, 0, -this.floorHeight / 4));
+        this.addObject(this.column);
+
+        this.column2 = new Column(new THREE.Vector3(-this.floorWidth/2 + base_width / 2, 0, this.floorHeight / 4));
+        this.addObject(this.column2);
+
+        this.column3 = new Column(new THREE.Vector3(this.floorWidth/2 - base_width / 2, 0, -this.floorHeight / 4));
+        this.addObject(this.column3);
+
+        this.column4 = new Column(new THREE.Vector3(this.floorWidth/2 - base_width / 2, 0, this.floorHeight / 4));
+        this.addObject(this.column4);
     }
 
     getLightsDefinition(){ // For now just an example, to customize

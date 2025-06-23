@@ -290,7 +290,7 @@ function interactDoor(){
 
         if(toUnlock && inventory.getItem(toUnlock)){
             unlockable = true;
-            interactionPromptElement.textContent = `Press [I] to unlock ${spirit.currentInteractableDoor.nameTargetRoom}`;
+            interactionPromptElement.textContent = `Press [I] to unlock ${spirit.currentInteractableDoor.nameTargetRoom} using ${inventory.getItem(toUnlock).name}`;
         }else{
             unlockable = false;
             interactionPromptElement.textContent = `This door is locked.`;
@@ -305,6 +305,7 @@ function animate() {
 
     const deltaTime = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
+
     spirit.update(deltaTime, elapsedTime, currentRoom);
 
     if(spirit.currentInteractableDoor)

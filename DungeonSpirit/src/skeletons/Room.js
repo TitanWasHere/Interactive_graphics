@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import checkerboardVert from './../shaders/checkerboard.vert?raw';
 import checkerboardFrag from './../shaders/checkerboard.frag?raw';
+import { instance } from 'three/tsl';
 
 const TextureLoader = new THREE.TextureLoader();
 
@@ -281,7 +282,7 @@ class Room extends THREE.Group {
     }
 
     addObject(object) {
-        if (object instanceof THREE.Object3D) {
+        if (object instanceof THREE.Object3D || object instanceof THREE.Mesh) {
             this.add(object);
             //this.scene.add(object);
         } else {
