@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Room } from './../skeletons/Room.js';
 import { Column } from '../objects/non_interactable/Column.js';
 import { Altar } from '../objects/non_interactable/Altar.js';
+import { Chest } from '../objects/interactable/Chest.js';
 import { AltairRoom } from './AltairRoom.js';
 
 export class StartRoom extends Room {
@@ -66,7 +67,12 @@ export class StartRoom extends Room {
 
     setupRoom(){
         this.#setupColumns();
-        this.addObject(new Altar());
+        //this.addObject(new Altar());
+        const chest = new Chest();
+        
+        this.addObject(chest);
+        
+        
     }
 
     #setupColumns(){
