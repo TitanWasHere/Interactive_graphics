@@ -2,6 +2,7 @@ import * as THREE from 'three';
 // -------- Rooms --------
 import { AltairRoom } from './rooms/AltairRoom.js';
 import { StartRoom } from './rooms/StartRoom.js';
+import { GemRoom } from './rooms/GemRoom.js';
 
 // -------- Managers --------
 import { CameraManager } from './managers/CameraManager.js';
@@ -62,9 +63,10 @@ function init(){
 
 function setupRooms(){
     roomInstances['start_room'] = new StartRoom();    
-    roomInstances['altair_room'] = new AltairRoom(); // Make sure AltairRoom is instantiated
+    roomInstances['altair_room'] = new AltairRoom(); 
+    roomInstances['gem_room'] = new GemRoom(); 
     
-    currentRoom = roomInstances['start_room'];
+    currentRoom = roomInstances['start_room']; // Set the current room to AltairRoom   
     scene.add(currentRoom);
 
     setupPlayer();
@@ -78,12 +80,12 @@ function setupPlayer(){
     spirit = new Spirit(new THREE.Vector3(0, 1, 0));
 
     inventory = spirit.getInventory();
-    inventory.addItem({
+    /*inventory.addItem({
         id: "1",
         name: "Key",
         description: "A small key that unlocks a door.",
         quantity: 1
-    })
+    });*/
     
     scene.add(spirit.mesh);
     scene.add(spirit.mainLight);
@@ -97,9 +99,24 @@ function setupInteraction() {
 function handleInteractionKey(event) {
  
     if (event.key.toLowerCase() === 'i') { 
-        if(!spirit || !spirit.currentInteractableDoor) {
+        
+
+        if(!spirit || (!spirit.currentInteractableDoor && !spirit.currentInteractableObject)) {
             return;
         }
+
+        if (spirit.currentInteractableObject) {
+            const object = spirit.currentInteractableObject;
+            console.log("Interacting with object:", object.itemData.name);
+            if (object.onInteract) {
+                const shouldRemove = object.onInteract(spirit);
+                if (shouldRemove) {
+                    currentRoom.removeObject(object);
+                }
+            }
+            return;
+        }
+
         if (spirit.currentInteractableDoor.interactable) {
             enterDoor(spirit.currentInteractableDoor);
         }
@@ -139,7 +156,7 @@ function setupGUI() {
         playPause: () => {
             audio.togglePlayPause();
         },
-        status: 'Stopped' // This will show the current status
+        status: 'Stopped' 
     };
     
     audioFolder.add(audioControls, 'playPause').name('Play/Pause Music');
@@ -227,25 +244,21 @@ function updateLightsGUI(roomName) {
 
     currentLightsFolder = gui.addFolder(`Lights: ${roomName}`);
 
-    // Ottieni le luci attive dal LightsManager
     const activeLights = lightsManager.getCurrentActiveLights();
 
     activeLights.forEach((light, index) => {
-        const lightType = light.type.replace('Light', ''); // Es. Ambient, Directional, Point
+        const lightType = light.type.replace('Light', ''); 
         const lightFolder = currentLightsFolder.addFolder(`${lightType} ${index + 1}`);
 
-        // Controllo per l'intensità (tutte le luci hanno l'intensità)
         lightFolder.add(light, 'intensity', 0, 5, 0.01) // Min, Max, Step
             .name('Intensity')
             .listen(); // 'listen' fa sì che il valore nel GUI si aggiorni se cambia esternamente
 
-        // Controllo per il colore (tutte le luci hanno il colore, eccetto HemisphereLight che ha sky/ground)
         if (light instanceof THREE.AmbientLight || 
             light instanceof THREE.DirectionalLight ||
             light instanceof THREE.PointLight ||
             light instanceof THREE.SpotLight) {
             
-            // Per il colore, dat.GUI preferisce un oggetto con una proprietà colore in formato hex string
             const colorObject = {
                 color: '#' + light.color.getHexString()
             };
@@ -256,7 +269,6 @@ function updateLightsGUI(roomName) {
                 });
         }
         
-        // Controlli specifici per HemisphereLight
         if (light instanceof THREE.HemisphereLight) {
             const skyColorObject = { color: '#' + light.skyColor.getHexString() };
             lightFolder.addColor(skyColorObject, 'color')
@@ -276,7 +288,7 @@ function updateLightsGUI(roomName) {
         
 
 
-        lightFolder.open(); // Apri le sottocartelle delle luci per default
+        lightFolder.open(); 
     });
 }
 
@@ -300,6 +312,19 @@ function interactDoor(){
     
 }
 
+function interactObject() {
+    interactionPromptElement.style.display = 'block';
+    const object = spirit.currentInteractableObject;
+    
+    if (object) {
+        interactionPromptElement.textContent = `Press [I] to take with ${object.itemData.name}`;
+    } else {
+        interactionPromptElement.style.display = 'none';
+        interactionPromptElement.textContent = '';
+        unlockable = false;
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
@@ -308,9 +333,12 @@ function animate() {
 
     spirit.update(deltaTime, elapsedTime, currentRoom);
 
-    if(spirit.currentInteractableDoor)
-        interactDoor();
-    else{
+    if(spirit.currentInteractableDoor || spirit.currentInteractableObject){
+        if(spirit.currentInteractableDoor)
+            interactDoor();
+        else
+            interactObject();
+    }else{
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
         unlockable = false;

@@ -29,6 +29,7 @@ class Room extends THREE.Group {
         this.tileSize = tileSize;
         this.materials = {};
         this.doors = [];
+        this.objects = [];
 
         this._startFloor();
         this._startWalls();
@@ -127,14 +128,12 @@ class Room extends THREE.Group {
             return;
         }
 
-        // Position doors on the floor surface instead of walls
-        const doorYPosition = 0.01; // Just slightly above the floor to avoid z-fighting
+        const doorYPosition = 0.01; 
 
         for(let doorDef in doorConfig) {
             doorDef = doorConfig[doorDef];
             console.log(`Creating door with definition: ${doorDef}`);
             
-            // Create door geometry as a horizontal plane (on the floor)
             const doorGeometry = new THREE.PlaneGeometry(doorDef.height, doorDef.width); 
             const doorMaterial = new THREE.MeshBasicMaterial({
                 color: doorDef.interactable ? 0x00ff00 : 0xff0000, 
@@ -144,15 +143,13 @@ class Room extends THREE.Group {
             });
             const doorMesh = new THREE.Mesh(doorGeometry, doorMaterial);
 
-            // Rotate the door to lay flat on the floor
-            doorMesh.rotation.x = -Math.PI / 2; // Rotate 90 degrees to lay flat
-
+            doorMesh.rotation.x = -Math.PI / 2;
             switch(doorDef.wallSide) {
                 case 'back':
                     doorMesh.position.set(
                         0,
                         doorYPosition,
-                        -this.floorHeight / 2 + (doorDef.height || 2) / 2 // Position near back wall
+                        -this.floorHeight / 2 + (doorDef.height || 2) / 2 
                     );
                     break;
                     
@@ -279,6 +276,27 @@ class Room extends THREE.Group {
 
         this.floorMesh = floor;
 
+    }
+
+    addInteractableObject(object) {
+        if (object instanceof THREE.Object3D || object instanceof THREE.Mesh) {
+            this.objects.push(object);
+            this.add(object);
+        } else {
+            console.error("Object must be an instance of THREE.Object3D");
+        }
+    }
+
+    removeObject(object) {
+        this.remove(object);
+        
+        if (object.dispose) {
+            object.dispose();
+        }
+    }
+
+    getInteractableObjects() {
+        return this.objects.filter(obj => obj.isInteractable);
     }
 
     addObject(object) {

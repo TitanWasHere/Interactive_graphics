@@ -5,7 +5,9 @@ import { Column } from '../objects/non_interactable/Column.js';
 import { Altar } from '../objects/non_interactable/Altar.js';
 import { Chest } from '../objects/interactable/Chest.js';
 import { AltairRoom } from './AltairRoom.js';
+import { Barrel } from '../objects/non_interactable/Barrel.js';
 import { Door } from '../objects/interactable/Door.js';
+import { Torch } from '../objects/non_interactable/Torch.js';
 
 export class StartRoom extends Room {
     constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
@@ -27,8 +29,8 @@ export class StartRoom extends Room {
                 width: 3,
                 height: 0.3,
                 interactable: false, // Red door
-                targetRoom: "altair_room",
-                nameTargetRoom: "Altair Room",
+                targetRoom: "gem_room",
+                nameTargetRoom: "Gem Room",
                 targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
                 toUnlock: "1", // ID 1 for key
             },
@@ -71,8 +73,12 @@ export class StartRoom extends Room {
         //this.addObject(new Altar());
         //const chest = new Chest();
         
-        this.addObject(new Door());
+        this.addObject(new Door(new THREE.Vector3(-this.floorWidth / 2, 0, 0)));
         
+        this.addObject(new Torch(new THREE.Vector3(-8.3, 6, 5)));
+        this.addObject(new Torch(new THREE.Vector3(-8.3, 6, -5)));
+        this.addObject(new Torch(new THREE.Vector3(8.3, 6, 5)));
+        this.addObject(new Torch(new THREE.Vector3(8.3, 6, -5)));
         
     }
 
@@ -110,7 +116,7 @@ export class StartRoom extends Room {
                 shadowCamera: {
                     left: -15, right: 15, top: 15, bottom: -15, 
                     near: 0.1, far: 50,
-                    mapSize: { width: 1024, height: 1024 } // Risoluzione delle ombre
+                    mapSize: { width: 1024, height: 1024 } 
                 }
             }
         ];
