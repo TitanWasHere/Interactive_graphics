@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import { Room } from './../skeletons/Room.js';
+import { Altar } from '../objects/non_interactable/Altar.js';
 export class AltairRoom extends Room {
     constructor(name = "Altair Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/brick_floor.jpg", wallTextureUrl = "../../textures/rock_bricks.png", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
         
@@ -38,6 +39,14 @@ export class AltairRoom extends Room {
                 textureRepeatY: textureRepeatWall.y || wallHeight / 5
             });
         }
+
+        this.setupRoom();
+    }
+
+    setupRoom(){
+        const altar = new Altar(new THREE.Vector3(0,0,0));
+        altar.rotateY(Math.PI / 2);
+        this.addObject(altar);
     }
 
     getLightsDefinition() { // For now just an example, to customize

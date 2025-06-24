@@ -5,6 +5,7 @@ import { Column } from '../objects/non_interactable/Column.js';
 import { Altar } from '../objects/non_interactable/Altar.js';
 import { Chest } from '../objects/interactable/Chest.js';
 import { AltairRoom } from './AltairRoom.js';
+import { Door } from '../objects/interactable/Door.js';
 
 export class StartRoom extends Room {
     constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
@@ -68,9 +69,9 @@ export class StartRoom extends Room {
     setupRoom(){
         this.#setupColumns();
         //this.addObject(new Altar());
-        const chest = new Chest();
+        //const chest = new Chest();
         
-        this.addObject(chest);
+        this.addObject(new Door());
         
         
     }
