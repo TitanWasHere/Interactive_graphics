@@ -13,7 +13,8 @@ import { LightsManager } from './managers/LightsManager.js';
 import { AudioManager } from './managers/AudioManager.js';
 
 // -------- Player --------
-import { Spirit } from './player/Spirit.js';
+import { Player } from './player/Player.js';
+//import { Spirit } from './skeletons/Spirit.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
@@ -28,7 +29,7 @@ let unlockable = false;
 let inventory;
 
 let clock;
-let spirit;
+let player;
 
 const sceneManager = new SceneManager();
 scene = sceneManager.getScene();
@@ -44,6 +45,8 @@ controls = controlsManager.getControls();
 
 let lightsManager = new LightsManager(scene, renderer);
 let roomInstances = {};
+
+//let newSpirit;
 
 init();
 
@@ -77,9 +80,15 @@ function setupRooms(){
 
 function setupPlayer(){
     
-    spirit = new Spirit(new THREE.Vector3(0, 1, 0));
+    player = new Player(new THREE.Vector3(0, 1, 0));
 
-    inventory = spirit.getInventory();
+    /*
+    newSpirit = new Spirit(new THREE.Vector3(6, 1, 8), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
+    scene.add(newSpirit.mesh);
+    scene.add(newSpirit.mainLight); // FIXME: add newSpirit light
+    */
+
+    inventory = player.getInventory();
     /*inventory.addItem({
         id: "1",
         name: "Key",
@@ -87,8 +96,10 @@ function setupPlayer(){
         quantity: 1
     });*/
     
-    scene.add(spirit.mesh);
-    scene.add(spirit.mainLight);
+    scene.add(player.mesh);
+    scene.add(player.mainLight);
+
+    
 }
 
 function setupInteraction() {
@@ -101,15 +112,15 @@ function handleInteractionKey(event) {
     if (event.key.toLowerCase() === 'i') { 
         
 
-        if(!spirit || (!spirit.currentInteractableDoor && !spirit.currentInteractableObject)) {
+        if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject)) {
             return;
         }
 
-        if (spirit.currentInteractableObject) {
-            const object = spirit.currentInteractableObject;
+        if (player.currentInteractableObject) {
+            const object = player.currentInteractableObject;
             console.log("Interacting with object:", object.itemData.name);
             if (object.onInteract) {
-                const shouldRemove = object.onInteract(spirit);
+                const shouldRemove = object.onInteract(player);
                 if (shouldRemove) {
                     currentRoom.removeObject(object);
                 }
@@ -117,12 +128,12 @@ function handleInteractionKey(event) {
             return;
         }
 
-        if (spirit.currentInteractableDoor.interactable) {
-            enterDoor(spirit.currentInteractableDoor);
+        if (player.currentInteractableDoor.interactable) {
+            enterDoor(player.currentInteractableDoor);
         }
-        if(spirit.currentInteractableDoor.toUnlock && unlockable) {
-            currentRoom.setInteractableDoor(spirit.currentInteractableDoor.wallSide);
-            inventory.removeItem(spirit.currentInteractableDoor.toUnlock);
+        if(player.currentInteractableDoor.toUnlock && unlockable) {
+            currentRoom.setInteractableDoor(player.currentInteractableDoor.wallSide);
+            inventory.removeItem(player.currentInteractableDoor.toUnlock);
             unlockable = false;
         }
     }
@@ -173,18 +184,18 @@ function setupGUI() {
 
     const spiritFolder = gui.addFolder('Spirit Light');
     
-    const spiritLightColor = { color: spirit.mesh.material.color.getHex() };
+    const spiritLightColor = { color: player.mesh.material.color.getHex() };
     spiritFolder.addColor(spiritLightColor, 'color')
         .name('Light Color')
-        .onChange((value) => { if (spirit) spirit.setColor(value); });
+        .onChange((value) => { if (player) player.setColor(value); });
     
-    spiritFolder.add(spirit, 'lightIntensityBase', 0, 100, 0.1)
+    spiritFolder.add(player, 'lightIntensityBase', 0, 100, 0.1)
         .name('Light Intensity')
-        .onChange((value) => { if (spirit) spirit.setLightIntensity(value); });
+        .onChange((value) => { if (player) player.setLightIntensity(value); });
 
-    spiritFolder.add(spirit, 'lightDistance', 0, 100, 0.1)
+    spiritFolder.add(player, 'lightDistance', 0, 100, 0.1)
         .name('Light Distance')
-        .onChange((value) => { if (spirit) spirit.setLightDistance(value); });
+        .onChange((value) => { if (player) player.setLightDistance(value); });
         
     spiritFolder.open();
 
@@ -213,9 +224,9 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
     currentRoom = roomInstances[newRoomName];
     scene.add(currentRoom); 
 
-    if (targetSpawnPoint && spirit) {
-        spirit.mesh.position.copy(targetSpawnPoint);
-        //console.log(`Spawned spirit at:`, targetSpawnPoint);
+    if (targetSpawnPoint && player) {
+        player.mesh.position.copy(targetSpawnPoint);
+        //console.log(`Spawned player at:`, targetSpawnPoint);
     }
 
     // Update lights for the new room
@@ -295,14 +306,14 @@ function updateLightsGUI(roomName) {
 function interactDoor(){
 
     interactionPromptElement.style.display = 'block';
-    if(spirit.currentInteractableDoor.interactable)
-        interactionPromptElement.textContent = `Press [I] to enter ${spirit.currentInteractableDoor.nameTargetRoom}`;
+    if(player.currentInteractableDoor.interactable)
+        interactionPromptElement.textContent = `Press [I] to enter ${player.currentInteractableDoor.nameTargetRoom}`;
     else{
-        const toUnlock = spirit.currentInteractableDoor.toUnlock;
+        const toUnlock = player.currentInteractableDoor.toUnlock;
 
         if(toUnlock && inventory.getItem(toUnlock)){
             unlockable = true;
-            interactionPromptElement.textContent = `Press [I] to unlock ${spirit.currentInteractableDoor.nameTargetRoom} using ${inventory.getItem(toUnlock).name}`;
+            interactionPromptElement.textContent = `Press [I] to unlock ${player.currentInteractableDoor.nameTargetRoom} using ${inventory.getItem(toUnlock).name}`;
         }else{
             unlockable = false;
             interactionPromptElement.textContent = `This door is locked.`;
@@ -314,7 +325,7 @@ function interactDoor(){
 
 function interactObject() {
     interactionPromptElement.style.display = 'block';
-    const object = spirit.currentInteractableObject;
+    const object = player.currentInteractableObject;
     
     if (object) {
         interactionPromptElement.textContent = `Press [I] to take ${object.itemData.name}`;
@@ -331,10 +342,11 @@ function animate() {
     const deltaTime = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
 
-    spirit.update(deltaTime, elapsedTime, currentRoom);
+    player.update(deltaTime, elapsedTime, currentRoom);
+    //newSpirit.update(deltaTime, elapsedTime); 
 
-    if(spirit.currentInteractableDoor || spirit.currentInteractableObject){
-        if(spirit.currentInteractableDoor)
+    if(player.currentInteractableDoor || player.currentInteractableObject){
+        if(player.currentInteractableDoor)
             interactDoor();
         else
             interactObject();

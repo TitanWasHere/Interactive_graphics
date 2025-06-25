@@ -46,15 +46,16 @@ export class Door extends THREE.Group {
 
         const mat = new THREE.MeshStandardMaterial({
             map: texture,
-            color: 0xffffff,
-            roughness: 0.2,
+            color: 0x949494,
+            roughness: 1,
             metalness: 0.1
         });
 
         this.mesh = new THREE.Mesh(doorGeo, mat); 
         this.mesh.position.y = this.height / 2;
-        this.mesh.castShadow = true; 
-        this.mesh.receiveShadow = true;
+        this.mesh.castShadow = true;
+        
+        
         this.add(this.mesh);
         
         

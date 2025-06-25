@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Spirit } from '../../player/Spirit';
+import { Player } from '../../player/Player';
 
 export class Key extends THREE.Group {
 
