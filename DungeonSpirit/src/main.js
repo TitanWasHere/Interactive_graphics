@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { AltairRoom } from './rooms/AltairRoom.js';
 import { StartRoom } from './rooms/StartRoom.js';
 import { GemRoom } from './rooms/GemRoom.js';
+import { CorridorRoom } from './rooms/CorridorRoom.js';
+import { SpiritRoom } from './rooms/SpiritRoom.js';
 
 // -------- Managers --------
 import { CameraManager } from './managers/CameraManager.js';
@@ -65,15 +67,16 @@ function init(){
 
 
 function setupRooms(){
+    roomInstances['corridor_room'] = new CorridorRoom();
     roomInstances['start_room'] = new StartRoom();    
     roomInstances['altair_room'] = new AltairRoom(); 
-    roomInstances['gem_room'] = new GemRoom(); 
+    roomInstances['gem_room'] = new GemRoom();
+    roomInstances['spirit_room'] = new SpiritRoom(); 
     
-    currentRoom = roomInstances['start_room']; // Set the current room to AltairRoom   
+    currentRoom = roomInstances['corridor_room'];    
     scene.add(currentRoom);
 
     setupPlayer();
-    
 
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
 }

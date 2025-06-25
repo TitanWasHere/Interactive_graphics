@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import checkerboardVert from './../shaders/checkerboard.vert?raw';
 import checkerboardFrag from './../shaders/checkerboard.frag?raw';
-import { instance } from 'three/tsl';
 
 const TextureLoader = new THREE.TextureLoader();
 
@@ -33,7 +32,9 @@ class Room extends THREE.Group {
 
         this._startFloor();
         this._startWalls();
+        //console.log(doorConfig);
         this._createDoors(doorConfig);
+        
     }
 
     _createCheckerboard(){
@@ -50,16 +51,17 @@ class Room extends THREE.Group {
     }
 
     _createDoors(doorConfig) {
-        if(!doorConfig || Object.keys(doorConfig).length === 0) {
+        if(!doorConfig) {
             return;
         }
 
         // Position doors on the floor surface instead of walls
         const doorYPosition = 0.01; // Just slightly above the floor to avoid z-fighting
-
+        console.log("Creating doors with configuration:", doorConfig);
         for(let doorDef in doorConfig) {
+            //console.log("Creating ballss:", doorDef);
             doorDef = doorConfig[doorDef];
-            console.log(`Creating door with definition: ${doorDef}`);
+            //console.log(`Creating door with definition:`);
             
             // Create door geometry as a horizontal plane (on the floor)
             const doorGeometry = new THREE.PlaneGeometry(doorDef.width, doorDef.height || 2); // Use height from config or default
@@ -89,6 +91,7 @@ class Room extends THREE.Group {
                         doorYPosition,
                         this.floorHeight / 2 - (doorDef.height || 2) / 2 // Position near front wall
                     );
+                    console.log("Door position set to front wall:", doorMesh.position);
                     break;
                     
                 case 'left':
@@ -113,7 +116,7 @@ class Room extends THREE.Group {
                     doorMaterial.dispose(); 
                     return; 
             }
-            
+            console.log("AGGIUNTA!");
             this.doors.push({
                 mesh: doorMesh,
                 definition: doorDef
@@ -149,7 +152,7 @@ class Room extends THREE.Group {
                     doorMesh.position.set(
                         0,
                         doorYPosition,
-                        -this.floorHeight / 2 + (doorDef.height || 2) / 2 
+                        -this.floorHeight / 2 + (doorDef.width || 2) / 2 
                     );
                     break;
                     
@@ -157,7 +160,7 @@ class Room extends THREE.Group {
                     doorMesh.position.set(
                         0,
                         doorYPosition,
-                        this.floorHeight / 2 - (doorDef.height || 2) / 2 // Position near front wall
+                        this.floorHeight / 2 - (doorDef.width || 2) / 2 // Position near front wall
                     );
                     break;
                     
@@ -250,8 +253,8 @@ class Room extends THREE.Group {
     }
 
     _startWalls(){
-        const wallBackGeometry = new THREE.PlaneGeometry(this.floorHeight, this.wallHeight);
-        const wallSideGeometry = new THREE.PlaneGeometry(this.floorWidth, this.wallHeight);
+        const wallBackGeometry = new THREE.PlaneGeometry(this.floorWidth, this.wallHeight);
+        const wallSideGeometry = new THREE.PlaneGeometry(this.floorHeight, this.wallHeight);
         const backWall = new THREE.Mesh(wallBackGeometry, this.materials.wall);
         backWall.position.set(0, this.wallHeight / 2, -this.floorHeight / 2);
         this.add(backWall);

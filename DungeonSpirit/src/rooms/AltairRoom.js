@@ -18,8 +18,8 @@ export class AltairRoom extends Room {
                 width: 4,
                 height: 0.3,
                 interactable: true,
-                targetRoom: "start_room",
-                nameTargetRoom: "Start Room",
+                targetRoom: "corridor_room",
+                nameTargetRoom: "Corridor Room",
                 targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
             },
         };

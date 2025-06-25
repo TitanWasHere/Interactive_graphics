@@ -16,8 +16,8 @@ export class GemRoom extends Room {
                 width: 4,
                 height: 0.3,
                 interactable: true,
-                targetRoom: "start_room",
-                nameTargetRoom: "Start Room",
+                targetRoom: "corridor_room",
+                nameTargetRoom: "Corridor Room",
                 targetSpawnPoint: new THREE.Vector3(8, 1, 0), 
             },
             

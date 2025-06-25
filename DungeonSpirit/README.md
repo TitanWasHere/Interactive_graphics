@@ -1,6 +1,7 @@
 ## To start
 Start the game by:
-   ```bash
-   npx vite
-    ```
+```bash
+npx vite
+```
+
     

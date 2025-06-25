@@ -1,45 +1,35 @@
 import * as THREE from 'three';
-
-import { Room } from './../skeletons/Room.js';
-import { Column } from '../objects/non_interactable/Column.js';
+import { Room } from '../skeletons/Room.js';
 import { Door } from '../objects/interactable/Door.js';
-import { Torch } from '../objects/non_interactable/Torch.js';
-import { Carpet } from '../objects/non_interactable/Carpet.js';
-
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
 export class StartRoom extends Room {
-    constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
-
+    constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
         const doorConfig = {
-            left:{
-                wallSide: "left",
+            front: {
+                wallSide: "front",
                 offset: 0,
-                width: 4,
-                height: 0.3,
+                width: 0.3,
+                height: 3,
                 interactable: true,
-                targetRoom: "altair_room",
-                nameTargetRoom: "Altair Room",
-                targetSpawnPoint: new THREE.Vector3(8, 1, 0), 
+                targetRoom: "corridor_room",
+                nameTargetRoom: "Corridor Room",
+                targetSpawnPoint: new THREE.Vector3(0, 1, -floorDepth / 2 + 2), // Spawn point in the center of the room
             },
-            right: { 
-                wallSide: "right",
+            back: {
+                wallSide: "back",
                 offset: 0,
-                width: 3,
-                height: 0.3,
-                interactable: false, // Red door
+                width: 0.3,
+                height: 3,
+                interactable: false,
                 targetRoom: "gem_room",
                 nameTargetRoom: "Gem Room",
-                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
-                toUnlock: "1", // ID 1 for key
-            },
-
+                targetSpawnPoint: new THREE.Vector3(0, 1, floorDepth / 2 - 2), // Spawn point in the center of the room
+                toUnlock: "2", 
+            }
         }
 
         super(floorWidth, floorDepth, wallHeight, name, doorConfig, tileSize, tilePrimary, tileSecondary);
-        
-        // Override default materials if textures are provided
+
         if (floorTextureUrl) {
             this.setFloor({
                 type: "texture",
@@ -69,84 +59,8 @@ export class StartRoom extends Room {
     }
 
     setupRoom(){
-        this.#setupColumns();
-        //this.addObject(new Altar());
-        //const chest = new Chest();
-        
-        this.addObject(new Door(new THREE.Vector3(-this.floorWidth / 2, 0, 0)));
-        
-        this.addObject(new Torch(new THREE.Vector3(-8.3, 6, 5)));
-        this.addObject(new Torch(new THREE.Vector3(-8.3, 6, -5)));
-        this.addObject(new Torch(new THREE.Vector3(8.3, 6, 5)));
-        this.addObject(new Torch(new THREE.Vector3(8.3, 6, -5)));
-
-        this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 18, 5));
-
-        const mtlLoader = new MTLLoader();
-        mtlLoader.setPath('../../assets/'); // Path to where .mtl and textures are
-        mtlLoader.load('skeleton.mtl', (materials) => {
-            materials.preload();
-
-            const objLoader = new OBJLoader();
-            objLoader.load('../../assets/skeleton.obj', (object) => {
-                object.position.set(8.5, 0, 6.3);
-                object.scale.set(2, 2, 2);
-                this.addObject(object);
-            },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded (OBJ)');
-            },
-            (error) => {
-                console.error('An error happened loading OBJ:', error);
-            });
-        },
-        (xhr) => {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded (MTL)');
-        },
-        (error) => {
-            console.error('An error happened loading MTL:', error);
-        });
-
+        const door = new Door(new THREE.Vector3(0, 0, -this.floorWidth / 2));
+        door.rotateY(Math.PI / 2);
+        this.addObject(door);
     }
-
-    #setupColumns(){
-        const base_width = 2;
-        const base_height = 1;
-
-        //this.column = new Column(new THREE.Vector3(0, 0, -this.floorWidth / 2 + base_width / 2), base_width, base_height, base_width * 3/5, this.wallHeight - base_height*2 , base_width, base_height );
-        this.column = new Column(new THREE.Vector3(-this.floorWidth/2 + base_width / 2, 0, -this.floorHeight / 4));
-        this.addObject(this.column);
-
-        this.column2 = new Column(new THREE.Vector3(-this.floorWidth/2 + base_width / 2, 0, this.floorHeight / 4));
-        this.addObject(this.column2);
-
-        this.column3 = new Column(new THREE.Vector3(this.floorWidth/2 - base_width / 2, 0, -this.floorHeight / 4));
-        this.addObject(this.column3);
-
-        this.column4 = new Column(new THREE.Vector3(this.floorWidth/2 - base_width / 2, 0, this.floorHeight / 4));
-        this.addObject(this.column4);
-    }
-
-    getLightsDefinition(){ // For now just an example, to customize
-        return [
-            {
-                type: 'AmbientLight',
-                color: 0xffffff, 
-                intensity: 0.0
-            },
-            {
-                type: 'DirectionalLight',
-                color: 0xffffff, 
-                intensity: 1.0,  
-                position: { x: 5, y: 10, z: 5 }, 
-                castShadow: true, 
-                shadowCamera: {
-                    left: -15, right: 15, top: 15, bottom: -15, 
-                    near: 0.1, far: 50,
-                    mapSize: { width: 1024, height: 1024 } 
-                }
-            }
-        ];
-    }
-
 }
