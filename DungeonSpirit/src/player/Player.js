@@ -112,7 +112,7 @@ export class Player extends Spirit {
     update(deltaTime, elapsedTime, currentRoom) {
 
         this.roomWidth = currentRoom.floorWidth;
-        this.roomDepth = currentRoom.floorDepth || this.roomWidth; 
+        this.roomDepth = currentRoom.floorHeight || this.roomWidth; 
 
         if (this.mesh && this.mesh.material) {
             const emissiveFactor = 0.5 + 0.3 * Math.sin(elapsedTime * 2);

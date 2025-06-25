@@ -21,8 +21,8 @@ export class StartRoom extends Room {
                 width: 0.3,
                 height: 3,
                 interactable: false,
-                targetRoom: "gem_room",
-                nameTargetRoom: "Gem Room",
+                targetRoom: "balcony_room",
+                nameTargetRoom: "Balcony Room",
                 targetSpawnPoint: new THREE.Vector3(0, 1, floorDepth / 2 - 2), // Spawn point in the center of the room
                 toUnlock: "2", 
             }

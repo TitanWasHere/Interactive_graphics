@@ -20,8 +20,18 @@ export class AltairRoom extends Room {
                 interactable: true,
                 targetRoom: "corridor_room",
                 nameTargetRoom: "Corridor Room",
-                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
+                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), 
             },
+            front: {
+                wallSide: "front",
+                offset: 0,
+                width: 0.3,
+                height: 3,
+                interactable: true,
+                targetRoom: "spirit_room",
+                nameTargetRoom: "Spirit Room",
+                targetSpawnPoint: new THREE.Vector3(0, 1, -floorDepth / 2 + 2), 
+            }
         };
 
         super(floorWidth, floorDepth, wallHeight, name, doorConfig, tileSize, tilePrimary, tileSecondary);

@@ -5,6 +5,7 @@ import { StartRoom } from './rooms/StartRoom.js';
 import { GemRoom } from './rooms/GemRoom.js';
 import { CorridorRoom } from './rooms/CorridorRoom.js';
 import { SpiritRoom } from './rooms/SpiritRoom.js';
+import { BalconyRoom } from './rooms/BalconyRoom.js';
 
 // -------- Managers --------
 import { CameraManager } from './managers/CameraManager.js';
@@ -67,13 +68,14 @@ function init(){
 
 
 function setupRooms(){
+    roomInstances['balcony_room'] = new BalconyRoom();
     roomInstances['corridor_room'] = new CorridorRoom();
     roomInstances['start_room'] = new StartRoom();    
     roomInstances['altair_room'] = new AltairRoom(); 
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(); 
     
-    currentRoom = roomInstances['corridor_room'];    
+    currentRoom = roomInstances['spirit_room'];    
     scene.add(currentRoom);
 
     setupPlayer();

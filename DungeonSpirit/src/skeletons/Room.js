@@ -49,82 +49,6 @@ class Room extends THREE.Group {
             side: THREE.DoubleSide
         });
     }
-
-    _createDoors(doorConfig) {
-        if(!doorConfig) {
-            return;
-        }
-
-        // Position doors on the floor surface instead of walls
-        const doorYPosition = 0.01; // Just slightly above the floor to avoid z-fighting
-        console.log("Creating doors with configuration:", doorConfig);
-        for(let doorDef in doorConfig) {
-            //console.log("Creating ballss:", doorDef);
-            doorDef = doorConfig[doorDef];
-            //console.log(`Creating door with definition:`);
-            
-            // Create door geometry as a horizontal plane (on the floor)
-            const doorGeometry = new THREE.PlaneGeometry(doorDef.width, doorDef.height || 2); // Use height from config or default
-            const doorMaterial = new THREE.MeshBasicMaterial({
-                color: doorDef.interactable ? 0x00ff00 : 0xff0000, 
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.8 // Make it slightly transparent so it's clearly a floor indicator
-            });
-            const doorMesh = new THREE.Mesh(doorGeometry, doorMaterial);
-
-            // Rotate the door to lay flat on the floor
-            doorMesh.rotation.x = -Math.PI / 2; // Rotate 90 degrees to lay flat
-
-            switch(doorDef.wallSide) {
-                case 'back':
-                    doorMesh.position.set(
-                        doorDef.offset || 0,
-                        doorYPosition,
-                        -this.floorHeight / 2 + (doorDef.height || 2) / 2 // Position near back wall
-                    );
-                    break;
-                    
-                case 'front':
-                    doorMesh.position.set(
-                        doorDef.offset || 0,
-                        doorYPosition,
-                        this.floorHeight / 2 - (doorDef.height || 2) / 2 // Position near front wall
-                    );
-                    console.log("Door position set to front wall:", doorMesh.position);
-                    break;
-                    
-                case 'left':
-                    doorMesh.position.set(
-                        -this.floorWidth / 2 + (doorDef.height || 2) / 2, // Position near left wall
-                        doorYPosition,
-                        doorDef.offset || 0
-                    );
-                    break;
-                    
-                case 'right':
-                    doorMesh.position.set(
-                        this.floorWidth / 2 - (doorDef.height || 2) / 2, // Position near right wall
-                        doorYPosition,
-                        doorDef.offset || 0
-                    );
-                    break;
-                    
-                default:
-                    console.warn(`Unknown wallSide: ${doorDef.wallSide} for a door.`);
-                    doorGeometry.dispose();
-                    doorMaterial.dispose(); 
-                    return; 
-            }
-            console.log("AGGIUNTA!");
-            this.doors.push({
-                mesh: doorMesh,
-                definition: doorDef
-            });
-            this.add(doorMesh);
-        }
-    }
-
     
     _createDoors(doorConfig) {
         if(!doorConfig || Object.keys(doorConfig).length === 0) {
@@ -152,7 +76,7 @@ class Room extends THREE.Group {
                     doorMesh.position.set(
                         0,
                         doorYPosition,
-                        -this.floorHeight / 2 + (doorDef.width || 2) / 2 
+                        -this.floorHeight / 2 + (doorDef.width || 1) / 2 
                     );
                     break;
                     
@@ -220,7 +144,12 @@ class Room extends THREE.Group {
             const texture = TextureLoader.load(config.textureUrl, (texture) => {
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(config.textureRepeatX || 3, config.textureRepeatY || 2);
+
+                const repeatX = config.textureRepeatX !== undefined ? config.textureRepeatX : 3;
+                const repeatY = config.textureRepeatY !== undefined ? config.textureRepeatY : 1; // Changed default from 2 to 1
+            
+
+                texture.repeat.set(repeatX, repeatY);
                 texture.colorSpace = THREE.SRGBColorSpace;
             }, undefined, (err) => {
                 console.error('An error happened loading the texture:', err);
