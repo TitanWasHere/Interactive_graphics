@@ -17,7 +17,9 @@ import { AudioManager } from './managers/AudioManager.js';
 
 // -------- Player --------
 import { Player } from './player/Player.js';
-//import { Spirit } from './skeletons/Spirit.js';
+
+// -------- NPC ---------- 
+import { Spirit } from './skeletons/Spirit.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
@@ -32,7 +34,7 @@ let unlockable = false;
 let inventory;
 
 let clock;
-let player;
+let player, newSpirit;
 
 const sceneManager = new SceneManager();
 scene = sceneManager.getScene();
@@ -73,9 +75,9 @@ function setupRooms(){
     roomInstances['start_room'] = new StartRoom();    
     roomInstances['altair_room'] = new AltairRoom(); 
     roomInstances['gem_room'] = new GemRoom();
-    roomInstances['spirit_room'] = new SpiritRoom(); 
+    roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['spirit_room'];    
+    currentRoom = roomInstances['start_room'];    
     scene.add(currentRoom);
 
     setupPlayer();
@@ -87,11 +89,9 @@ function setupPlayer(){
     
     player = new Player(new THREE.Vector3(0, 1, 0));
 
-    /*
-    newSpirit = new Spirit(new THREE.Vector3(6, 1, 8), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
-    scene.add(newSpirit.mesh);
-    scene.add(newSpirit.mainLight); // FIXME: add newSpirit light
-    */
+    
+    newSpirit = new Spirit(new THREE.Vector3(0, 1, 7), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
+    
 
     inventory = player.getInventory();
     /*inventory.addItem({
@@ -239,6 +239,14 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
     updateLightsGUI(currentRoom.name);
 
     //console.log(`Switched to ${currentRoom.name}`);
+
+    if( newRoomName === "spirit_room" ) {
+        scene.add(newSpirit.mesh);
+        scene.add(newSpirit.mainLight); 
+    }else{
+        scene.remove(newSpirit.mesh);
+        scene.remove(newSpirit.mainLight); 
+    }
 }
 
 
@@ -348,7 +356,7 @@ function animate() {
     const elapsedTime = clock.getElapsedTime();
 
     player.update(deltaTime, elapsedTime, currentRoom);
-    //newSpirit.update(deltaTime, elapsedTime); 
+    newSpirit.update(deltaTime, elapsedTime); 
 
     if(player.currentInteractableDoor || player.currentInteractableObject){
         if(player.currentInteractableDoor)

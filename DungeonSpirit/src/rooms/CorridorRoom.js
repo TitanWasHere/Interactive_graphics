@@ -97,7 +97,7 @@ export class CorridorRoom extends Room {
 
         this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 28, 5));
 
-        /*const mtlLoader = new MTLLoader();
+        const mtlLoader = new MTLLoader();
         mtlLoader.setPath('../../assets/'); // Path to where .mtl and textures are
         mtlLoader.load('skeleton.mtl', (materials) => {
             materials.preload();
@@ -120,7 +120,7 @@ export class CorridorRoom extends Room {
         },
         (error) => {
             console.error('An error happened loading MTL:', error);
-        });*/
+        });
 
     }
 

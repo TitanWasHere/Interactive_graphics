@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Room } from '../skeletons/Room';
 import { Door } from '../objects/interactable/Door';
+import { Spirit } from '../skeletons/Spirit';
 
 export class SpiritRoom extends Room{
     constructor(name = "Spirit Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_grass_wall.png", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
@@ -38,6 +39,7 @@ export class SpiritRoom extends Room{
         }
 
         this.setupRoom();
+
     }
 
     setupRoom(){
@@ -50,8 +52,8 @@ export class SpiritRoom extends Room{
         return [
             {
                 type: 'AmbientLight',
-                color: 0xffffff, 
-                intensity: 0.0
+                color: 0x009e3d, 
+                intensity: 1.9
             },
             {
                 type: 'DirectionalLight',
