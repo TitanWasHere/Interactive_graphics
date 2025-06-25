@@ -4,6 +4,7 @@ import { Room } from './../skeletons/Room.js';
 import { Column } from '../objects/non_interactable/Column.js';
 import { Door } from '../objects/interactable/Door.js';
 import { Torch } from '../objects/non_interactable/Torch.js';
+import { Carpet } from '../objects/non_interactable/Carpet.js';
 
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -79,6 +80,8 @@ export class StartRoom extends Room {
         this.addObject(new Torch(new THREE.Vector3(8.3, 6, 5)));
         this.addObject(new Torch(new THREE.Vector3(8.3, 6, -5)));
 
+        this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 18, 5));
+
         const mtlLoader = new MTLLoader();
         mtlLoader.setPath('../../assets/'); // Path to where .mtl and textures are
         mtlLoader.load('skeleton.mtl', (materials) => {
@@ -86,8 +89,8 @@ export class StartRoom extends Room {
 
             const objLoader = new OBJLoader();
             objLoader.load('../../assets/skeleton.obj', (object) => {
-                object.position.set(-8, 0, -10);
-                object.scale.set(3, 3, 3);
+                object.position.set(8.5, 0, 6.3);
+                object.scale.set(2, 2, 2);
                 this.addObject(object);
             },
             (xhr) => {
