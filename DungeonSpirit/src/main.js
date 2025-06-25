@@ -317,7 +317,7 @@ function interactObject() {
     const object = spirit.currentInteractableObject;
     
     if (object) {
-        interactionPromptElement.textContent = `Press [I] to take with ${object.itemData.name}`;
+        interactionPromptElement.textContent = `Press [I] to take ${object.itemData.name}`;
     } else {
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';

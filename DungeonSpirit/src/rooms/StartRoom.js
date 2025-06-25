@@ -2,12 +2,11 @@ import * as THREE from 'three';
 
 import { Room } from './../skeletons/Room.js';
 import { Column } from '../objects/non_interactable/Column.js';
-import { Altar } from '../objects/non_interactable/Altar.js';
-import { Chest } from '../objects/interactable/Chest.js';
-import { AltairRoom } from './AltairRoom.js';
-import { Barrel } from '../objects/non_interactable/Barrel.js';
 import { Door } from '../objects/interactable/Door.js';
 import { Torch } from '../objects/non_interactable/Torch.js';
+
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
 export class StartRoom extends Room {
     constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
@@ -79,7 +78,32 @@ export class StartRoom extends Room {
         this.addObject(new Torch(new THREE.Vector3(-8.3, 6, -5)));
         this.addObject(new Torch(new THREE.Vector3(8.3, 6, 5)));
         this.addObject(new Torch(new THREE.Vector3(8.3, 6, -5)));
-        
+
+        const mtlLoader = new MTLLoader();
+        mtlLoader.setPath('../../assets/'); // Path to where .mtl and textures are
+        mtlLoader.load('skeleton.mtl', (materials) => {
+            materials.preload();
+
+            const objLoader = new OBJLoader();
+            objLoader.load('../../assets/skeleton.obj', (object) => {
+                object.position.set(-8, 0, -10);
+                object.scale.set(3, 3, 3);
+                this.addObject(object);
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded (OBJ)');
+            },
+            (error) => {
+                console.error('An error happened loading OBJ:', error);
+            });
+        },
+        (xhr) => {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded (MTL)');
+        },
+        (error) => {
+            console.error('An error happened loading MTL:', error);
+        });
+
     }
 
     #setupColumns(){

@@ -10,7 +10,7 @@ export class CameraManager {
         let aspect = window.innerWidth / window.innerHeight;
 
         this.camera = new THREE.PerspectiveCamera(
-            80, 
+            65, 
             aspect, 
             0.1, 
             1000 
