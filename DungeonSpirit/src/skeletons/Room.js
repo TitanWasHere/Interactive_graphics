@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import checkerboardVert from './../shaders/checkerboard.vert?raw';
 import checkerboardFrag from './../shaders/checkerboard.frag?raw';
 
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+
 const TextureLoader = new THREE.TextureLoader();
 
 class Room extends THREE.Group {
@@ -208,6 +211,33 @@ class Room extends THREE.Group {
 
         this.floorMesh = floor;
 
+    }
+
+    addLoadableObject(path, position, scale, rotation = new THREE.Vector3(0, 0, 0)) {
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load(path + '.mtl', (materials) => {
+            materials.preload();
+
+            const objLoader = new OBJLoader();
+            objLoader.load(path + '.obj', (object) => {
+                object.position.set(position.x, position.y, position.z);
+                object.scale.set(scale.x, scale.y, scale.z);
+                object.rotation.set(rotation.x, rotation.y, rotation.z);
+                this.addObject(object);
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded (OBJ)');
+            },
+            (error) => {
+                console.error('An error happened loading OBJ:', error);
+            });
+        },
+        (xhr) => {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded (MTL)');
+        },
+        (error) => {
+            console.error('An error happened loading MTL:', error);
+        });
     }
 
     addInteractableObject(object) {

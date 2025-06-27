@@ -6,9 +6,6 @@ import { Door } from '../objects/interactable/Door.js';
 import { Torch } from '../objects/non_interactable/Torch.js';
 import { Carpet } from '../objects/non_interactable/Carpet.js';
 
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-
 export class CorridorRoom extends Room {
     constructor(name = "Corridor Room", floorWidth = 30, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
 
@@ -97,31 +94,8 @@ export class CorridorRoom extends Room {
 
         this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 28, 5));
 
-        const mtlLoader = new MTLLoader();
-        mtlLoader.setPath('../../assets/'); // Path to where .mtl and textures are
-        mtlLoader.load('skeleton.mtl', (materials) => {
-            materials.preload();
-
-            const objLoader = new OBJLoader();
-            objLoader.load('../../assets/skeleton.obj', (object) => {
-                object.position.set(8.5, 0, 6.3);
-                object.scale.set(2, 2, 2);
-                this.addObject(object);
-            },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded (OBJ)');
-            },
-            (error) => {
-                console.error('An error happened loading OBJ:', error);
-            });
-        },
-        (xhr) => {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded (MTL)');
-        },
-        (error) => {
-            console.error('An error happened loading MTL:', error);
-        });
-
+        this.addLoadableObject("../../assets/skeletons/skeleton", new THREE.Vector3(8.5, 0, 6.3), new THREE.Vector3(2, 2, 2));
+        
     }
 
     #setupColumns(){

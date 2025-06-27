@@ -77,7 +77,7 @@ function setupRooms(){
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['start_room'];    
+    currentRoom = roomInstances['spirit_room']; 
     scene.add(currentRoom);
 
     setupPlayer();
@@ -103,7 +103,7 @@ function setupPlayer(){
     
     scene.add(player.mesh);
     scene.add(player.mainLight);
-
+    addNPCSpirit("spirit_room"); // TODO: delete
     
 }
 
@@ -240,6 +240,10 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
 
     //console.log(`Switched to ${currentRoom.name}`);
 
+    addNPCSpirit(newRoomName);
+}
+
+function addNPCSpirit(newRoomName){
     if( newRoomName === "spirit_room" ) {
         scene.add(newSpirit.mesh);
         scene.add(newSpirit.mainLight); 
@@ -248,7 +252,6 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
         scene.remove(newSpirit.mainLight); 
     }
 }
-
 
 function updateLightsGUI(roomName) {
 
