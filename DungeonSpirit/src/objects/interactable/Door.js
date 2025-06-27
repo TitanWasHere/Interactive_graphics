@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { grayscale } from 'three/tsl';
 
 export class Door extends THREE.Group {
     constructor(

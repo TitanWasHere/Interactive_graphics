@@ -74,7 +74,13 @@ export class AltairRoom extends Room {
         this.addObject(new Torch(new THREE.Vector3(-2.9, 6, 4)));
         this.addObject(new Torch(new THREE.Vector3(-2.9, 6, -4)));
 
-        this.key = new Key(new THREE.Vector3(0.6, 2.1, 0));
+        const keyData = {
+            name: "Key",
+            description: "A golden key that unlocks a door.",
+            quantity: 1,
+            id: "1"
+        }
+        this.key = new Key(new THREE.Vector3(0.6, 2.1, 0), keyData);
         this.key.rotateX(Math.PI / 2);
         this.key.rotateZ(Math.PI / 4);
         this.key.rotateY(Math.PI / 2);

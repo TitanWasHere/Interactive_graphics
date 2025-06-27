@@ -13,7 +13,13 @@ export class Inventory {
                 name: "Key",
                 description: "A small key that unlocks a door.",
                 quantity: 1
-            }*/
+            },*/
+            "3":{
+                id: "3",
+                name: "sword",
+                description: "A sharp sword that can be used to fight enemies.",
+                quantity: 1
+            }
         };
         
     }
@@ -42,6 +48,14 @@ export class Inventory {
             }
         } else {
             console.error("Item not found in inventory.");
+        }
+    }
+
+    hasItem(item){
+        for (const key in this.items) {
+            if (this.items[key].id === item || this.items[key].name === item) {
+                return key;
+            }
         }
     }
 

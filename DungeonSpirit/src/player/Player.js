@@ -84,6 +84,29 @@ export class Player extends Spirit {
         
     }
 
+    checkNearbyNPCs(room) {
+        this.currentInteractableNPC = null; 
+        if (!room || !room.getInteractableNPCs) return;
+
+        const interactableNPCs = room.getInteractableNPCs();
+        //console.log("Interactable NPCs:", interactableNPCs);
+        let closestNPC = null;
+        let minDistanceSq = this.interactionDistance * this.interactionDistance;
+
+        for (const npcData of interactableNPCs) {
+            // Check distance to the NPC's visual center point
+            const distanceSq = this.mesh.position.distanceToSquared(npcData.mesh.position);
+            if (distanceSq < minDistanceSq) {
+                minDistanceSq = distanceSq;
+                closestNPC = npcData; 
+            }
+        }
+        if (closestNPC) {
+            this.currentInteractableNPC = closestNPC;
+            //console.log(`Closest NPC: ${this.currentInteractableNPC.name} at distance ${Math.sqrt(minDistanceSq)}`);
+        }
+    }
+
     checkNearbyDoors(room) {
         this.currentInteractableDoor = null; 
         if (!room || !room.getInteractableDoors) return;
@@ -126,6 +149,7 @@ export class Player extends Spirit {
         this.updateFireParticles(deltaTime, elapsedTime);
         this.checkNearbyDoors(currentRoom);
         this.checkNearbyObjects(currentRoom);
+        this.checkNearbyNPCs(currentRoom);
     }    
 
     updateMovement(deltaTime, elapsedTime) {

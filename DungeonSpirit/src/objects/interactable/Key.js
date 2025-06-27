@@ -3,14 +3,14 @@ import { Player } from '../../player/Player';
 
 export class Key extends THREE.Group {
 
-    constructor(position = new THREE.Vector3(0, 0, 0), radius = 0.1, height = 0.3) {
+    constructor(position = new THREE.Vector3(0, 0, 0), keyData = null, radius = 0.1, height = 0.3) {
         super();
         this.position.copy(position);
         this.radius = radius;
         this.height = height;
 
         this.isInteractable = true; 
-        this.itemData = {
+        this.itemData = keyData || {
             name: "Key",
             description: "A golden key that unlocks a door.",
             quantity: 1,

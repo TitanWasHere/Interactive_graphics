@@ -70,7 +70,7 @@ export class SpiritRoom extends Room{
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(5.5, 0, -this.floorHeight / 2  + 2), new THREE.Vector3(0.3, 0.3, 0.3), new THREE.Vector3(0, Math.PI / 2, 0));
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-5, 0, -7), new THREE.Vector3(0.2, 0.2, 0.2));
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-7, 0, 5), new THREE.Vector3(0.2, 0.2, 0.2), new THREE.Vector3(0, -Math.PI / 2, 0));
-    
+        this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-4, 0, 4), new THREE.Vector3(0.3, 0.3, 0.3), new THREE.Vector3(0, 0, 0));
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-10.8, 12, 0), new THREE.Vector3(0.2, 0.2, 0.2), new THREE.Vector3(0, 0, Math.PI));
     }
 

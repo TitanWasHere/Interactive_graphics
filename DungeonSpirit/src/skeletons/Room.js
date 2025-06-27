@@ -32,6 +32,7 @@ class Room extends THREE.Group {
         this.materials = {};
         this.doors = [];
         this.objects = [];
+        this.NPCs = [];
 
         this._startFloor();
         this._startWalls();
@@ -214,6 +215,7 @@ class Room extends THREE.Group {
     }
 
     addLoadableObject(path, position, scale, rotation = new THREE.Vector3(0, 0, 0)) {
+        console.log(`Loading object from path: ${path}`);
         const mtlLoader = new MTLLoader();
         mtlLoader.load(path + '.mtl', (materials) => {
             materials.preload();
@@ -259,6 +261,10 @@ class Room extends THREE.Group {
 
     getInteractableObjects() {
         return this.objects.filter(obj => obj.isInteractable);
+    }
+
+    getInteractableNPCs() {
+        return this.NPCs.filter(npc => npc.isInteractable);
     }
 
     addObject(object) {
@@ -336,6 +342,10 @@ class Room extends THREE.Group {
         door.mesh.material.opacity = 0.8; 
         door.definition.interactable = true; 
         door.toUnlock = null; 
+    }
+
+    addNPC(npc) {
+        this.NPCs.push(npc);
     }
 
     getInteractableDoors() {

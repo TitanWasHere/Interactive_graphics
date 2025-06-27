@@ -19,7 +19,7 @@ import { AudioManager } from './managers/AudioManager.js';
 import { Player } from './player/Player.js';
 
 // -------- NPC ---------- 
-import { Spirit } from './skeletons/Spirit.js';
+import { PurpleSpirit } from './objects/interactable/PurpleSpirit.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
@@ -80,18 +80,18 @@ function setupRooms(){
     currentRoom = roomInstances['spirit_room']; 
     scene.add(currentRoom);
 
-    setupPlayer();
+    setupPlayer(roomInstances);
 
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
 }
 
-function setupPlayer(){
+function setupPlayer(roomInstances){
     
     player = new Player(new THREE.Vector3(0, 1, 0));
 
     
-    newSpirit = new Spirit(new THREE.Vector3(0, 1, 7), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
-    
+    newSpirit = new PurpleSpirit(new THREE.Vector3(0, 1, 7), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
+    roomInstances['spirit_room'].addNPC(newSpirit);
 
     inventory = player.getInventory();
     /*inventory.addItem({
@@ -117,7 +117,7 @@ function handleInteractionKey(event) {
     if (event.key.toLowerCase() === 'i') { 
         
 
-        if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject)) {
+        if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject && !player.currentInteractableNPC)) {
             return;
         }
 
@@ -132,14 +132,57 @@ function handleInteractionKey(event) {
             }
             return;
         }
-
-        if (player.currentInteractableDoor.interactable) {
-            enterDoor(player.currentInteractableDoor);
+        if(player.currentInteractableDoor) {
+            if (player.currentInteractableDoor.interactable) {
+                enterDoor(player.currentInteractableDoor);
+            }
+            if(player.currentInteractableDoor.toUnlock && unlockable) {
+                currentRoom.setInteractableDoor(player.currentInteractableDoor.wallSide);
+                inventory.removeItem(player.currentInteractableDoor.toUnlock);
+                unlockable = false;
+            }
         }
-        if(player.currentInteractableDoor.toUnlock && unlockable) {
-            currentRoom.setInteractableDoor(player.currentInteractableDoor.wallSide);
-            inventory.removeItem(player.currentInteractableDoor.toUnlock);
-            unlockable = false;
+
+        
+        if (player.currentInteractableNPC) {
+            //console.log("Interacting with NPC:", player.currentInteractableNPC.name);
+
+            const npc = player.currentInteractableNPC;
+            console.log("Interacting with NPC:", npc.name);
+            if (npc.isInteractable) {
+                const resp = npc.onInteract(player);
+                const msg = npc.onNPCInteract(resp);
+                console.log(npc);
+                const messageBox = document.getElementById('message-box');
+                messageBox.textContent = `[${npc.name}]: ${msg}`;
+                messageBox.style.display = 'block';
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                    interactionPromptElement.style.display = 'none';
+                    interactionPromptElement.textContent = '';
+                }, 4000);
+
+                /*if (resp){
+                    const messageBox = document.getElementById('message-box');
+
+                    messageBox.textContent = "[Purple spirit]: As I said, this is your key!";
+                    messageBox.style.display = 'block';
+                    setTimeout(() => {
+                        messageBox.style.display = 'none';
+                        interactionBox.style.display = 'block';
+                    }, 4000); 
+                }else{
+                    const messageBox = document.getElementById('message-box');
+
+                    messageBox.textContent = "[Purple spirit]: Give me the sword of a warrior and I will reward you.";
+                    messageBox.style.display = 'block';
+                    setTimeout(() => {
+                        messageBox.style.display = 'none';
+                        interactionBox.style.display = 'block';
+                    }, 4000); 
+                }*/
+            }
+            return;
         }
     }
 }
@@ -339,6 +382,19 @@ function interactDoor(){
     
 }
 
+function interactNPC(){
+    interactionPromptElement.style.display = 'block';
+    const npc = player.currentInteractableNPC;
+    
+    if (npc) {
+        interactionPromptElement.textContent = `Press [I] to interact with ${npc.name}`;
+    } else {
+        interactionPromptElement.style.display = 'none';
+        interactionPromptElement.textContent = '';
+        unlockable = false;
+    }
+}
+
 function interactObject() {
     interactionPromptElement.style.display = 'block';
     const object = player.currentInteractableObject;
@@ -360,11 +416,13 @@ function animate() {
 
     player.update(deltaTime, elapsedTime, currentRoom);
     newSpirit.update(deltaTime, elapsedTime); 
-
-    if(player.currentInteractableDoor || player.currentInteractableObject){
+    //console.log(player.currentInteractableNPC);
+    if(player.currentInteractableDoor || player.currentInteractableObject || player.currentInteractableNPC){
         if(player.currentInteractableDoor)
             interactDoor();
-        else
+        else if(player.currentInteractableNPC != null)
+            interactNPC();
+        else if(player.currentInteractableObject)
             interactObject();
     }else{
         interactionPromptElement.style.display = 'none';
