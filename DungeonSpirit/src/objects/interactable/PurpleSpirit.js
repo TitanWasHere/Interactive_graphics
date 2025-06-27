@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { Spirit } from '../../skeletons/Spirit';
 
 export class PurpleSpirit extends Spirit {
-    constructor(initPose = new THREE.Vector3(0, 10, 0), sphereColor = 0xff2222, fireMaterial1 = 0xff3300, fireMaterial2 = 0xff8800, fireMaterial3 = 0xffff00) {
+    constructor(initPose = new THREE.Vector3(0, 10, 0), sphereColor = 0xff2222, fireMaterial1 = 0xff3300, fireMaterial2 = 0xff8800, fireMaterial3 = 0xffff00, isInteractable = true) {
         super(initPose, sphereColor, fireMaterial1, fireMaterial2, fireMaterial3);
 
         this.name = "Purple Spirit";
         this.position = "spirit_room";
-        this.isInteractable = true; 
+        this.isInteractable = isInteractable; 
         this.keyData = {
             name: "Exit Key",
             description: "The key that unlocks the exit door.",
@@ -18,6 +18,7 @@ export class PurpleSpirit extends Spirit {
         this.firstInteraction = false;
         this.firstInteractionAfterSword = true;
         this.swordGiven = false;
+        
     }
 
     onInteract(player){
@@ -43,14 +44,15 @@ export class PurpleSpirit extends Spirit {
             this.swordGiven = true;
             return "How did you know I needed a sword? Anyway, take this key as a reward";
         }
-        if(resp && this.firstInteractionAfterSword){
+        if(resp && this.firstInteractionAfterSword && !this.swordGiven){
             this.firstInteractionAfterSword = false;
+            this.swordGiven = true;
             return "Thanks, take this key, I think you need it";
         }
-        if(resp && !this.firstInteractionAfterSword){
+        if(resp && !this.firstInteractionAfterSword && this.swordGiven){
             return "Go to the beginning, and you'll understand";
         }
-        if(!resp && !this.firstInteraction){
+        if(!resp && !this.firstInteraction && !this.swordGiven){
             this.firstInteraction = true;
             return "I need a sword, bring it to me and I will reward you";
         }
@@ -60,6 +62,9 @@ export class PurpleSpirit extends Spirit {
         }
         if(!resp && this.firstInteraction){
             return "Maybe in some kind of treasures you can find a sword..."
+        }
+        if(this.swordGiven){
+            return "I already gave you the key, go to the beginning and you'll understand";
         }
     }
 }

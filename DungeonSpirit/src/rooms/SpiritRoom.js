@@ -2,11 +2,8 @@ import * as THREE from 'three';
 import { Room } from '../skeletons/Room';
 import { Door } from '../objects/interactable/Door';
 
-import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader.js';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-
 export class SpiritRoom extends Room{
-    constructor(name = "Spirit Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/grass.jpg", wallTextureUrl = "../../textures/brick_grass_wall.png", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
+    constructor(name = "Spirit Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_grass_wall.png", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
         const doorConfig = {
             back: {
                 wallSide: "back",
@@ -26,7 +23,7 @@ export class SpiritRoom extends Room{
                 type: "texture",
                 textureUrl: floorTextureUrl,
                 textureRepeatX: textureRepeatFloor.x || floorWidth / 10,
-                textureRepeatY: 1 
+                textureRepeatY: 2
             });
         }
         // If no floorTextureUrl is provided, _startFloor() in Room's constructor will handle default.

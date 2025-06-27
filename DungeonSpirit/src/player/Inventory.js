@@ -19,7 +19,13 @@ export class Inventory {
                 name: "sword",
                 description: "A sharp sword that can be used to fight enemies.",
                 quantity: 1
-            }
+            },
+            /*"2": {
+                name: "Exit Key",
+                description: "The key that unlocks the exit door.",
+                quantity: 1,
+                id: "2"
+            }*/
         };
         
     }

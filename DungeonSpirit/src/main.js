@@ -20,6 +20,7 @@ import { Player } from './player/Player.js';
 
 // -------- NPC ---------- 
 import { PurpleSpirit } from './objects/interactable/PurpleSpirit.js';
+import { Spirit } from './skeletons/Spirit.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
@@ -34,7 +35,7 @@ let unlockable = false;
 let inventory;
 
 let clock;
-let player, newSpirit;
+let player, newSpirit, guardSpirit1, guardSpirit2;
 
 const sceneManager = new SceneManager();
 scene = sceneManager.getScene();
@@ -91,6 +92,10 @@ function setupPlayer(roomInstances){
 
     
     newSpirit = new PurpleSpirit(new THREE.Vector3(0, 1, 7), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
+    guardSpirit1 = new Spirit(new THREE.Vector3(4, 1, -5), 0x006622, 0x009933, 0x00cc44);
+    guardSpirit2 = new Spirit(new THREE.Vector3(-4, 1, -3), 0x228b22, 0x33cc88, 0x66ffcc);
+    
+    
     roomInstances['spirit_room'].addNPC(newSpirit);
 
     inventory = player.getInventory();
@@ -290,9 +295,20 @@ function addNPCSpirit(newRoomName){
     if( newRoomName === "spirit_room" ) {
         scene.add(newSpirit.mesh);
         scene.add(newSpirit.mainLight); 
+
+        scene.add(guardSpirit1.mesh);
+        scene.add(guardSpirit1.mainLight);
+        scene.add(guardSpirit2.mesh);
+        scene.add(guardSpirit2.mainLight);
+
     }else{
         scene.remove(newSpirit.mesh);
         scene.remove(newSpirit.mainLight); 
+
+        scene.remove(guardSpirit1.mesh);
+        scene.remove(guardSpirit1.mainLight);
+        scene.remove(guardSpirit2.mesh);
+        scene.remove(guardSpirit2.mainLight);
     }
 }
 
@@ -416,6 +432,9 @@ function animate() {
 
     player.update(deltaTime, elapsedTime, currentRoom);
     newSpirit.update(deltaTime, elapsedTime); 
+    guardSpirit1.update(deltaTime, elapsedTime);
+    guardSpirit2.update(deltaTime, elapsedTime);
+
     //console.log(player.currentInteractableNPC);
     if(player.currentInteractableDoor || player.currentInteractableObject || player.currentInteractableNPC){
         if(player.currentInteractableDoor)
