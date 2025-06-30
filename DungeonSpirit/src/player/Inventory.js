@@ -14,13 +14,13 @@ export class Inventory {
                 description: "A small key that unlocks a door.",
                 quantity: 1
             },*/
-            "3":{
+            /*"3":{
                 id: "3",
                 name: "sword",
                 description: "A sharp sword that can be used to fight enemies.",
                 quantity: 1
             },
-            /*"2": {
+            "2": {
                 name: "Exit Key",
                 description: "The key that unlocks the exit door.",
                 quantity: 1,

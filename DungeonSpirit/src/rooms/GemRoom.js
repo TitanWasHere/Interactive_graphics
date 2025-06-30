@@ -97,6 +97,11 @@ export class GemRoom extends Room {
             goldMountain.scale.set(scale, scale, scale);
             this.addObject(goldMountain);
         }
+
+        this.addLoadableObject("../../assets/skeletons/skeleton", new THREE.Vector3(5, 0, 2), new THREE.Vector3(2, 2, 2));
+        this.addLoadableObject("../../assets/skeletons/skeleton_standing_up", new THREE.Vector3(-9, -1.5, -9), new THREE.Vector3(2, 2, 2));
+        this.addLoadableObject("../../assets/skeletons/skeleton_standing_up", new THREE.Vector3(-1, 2, -9.5), new THREE.Vector3(2, 2, 2));
+
     }
 
     getLightsDefinition(){ 

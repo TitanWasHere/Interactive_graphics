@@ -25,11 +25,11 @@ export class CorridorRoom extends Room {
                 offset: 0,
                 width: 4,
                 height: 0.3,
-                interactable: false, // Red door
+                interactable: false, 
                 targetRoom: "gem_room",
                 nameTargetRoom: "Gem Room",
-                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), // Spawn point in the center of the room
-                toUnlock: "1", // ID 1 for key
+                targetSpawnPoint: new THREE.Vector3(-9, 1, 0), 
+                toUnlock: "1", 
             },
             back: {
                 wallSide: "back",
@@ -94,7 +94,13 @@ export class CorridorRoom extends Room {
 
         this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 28, 5));
 
-        this.addLoadableObject("../../assets/skeletons/skeleton", new THREE.Vector3(8.5, 0, 6.3), new THREE.Vector3(2, 2, 2));
+        this.addLoadableObject("../../assets/skeletons/skeleton", new THREE.Vector3(13.5, 0, 6.3), new THREE.Vector3(2, 2, 2), new THREE.Vector3(0, -0.5, 0));
+        this.addLoadableObject("../../assets/skeletons/skeleton", new THREE.Vector3(13.5, 0, -6.3), new THREE.Vector3(2, 2, 2), new THREE.Vector3(0, Math.PI, 0));
+
+        this.addLoadableObject("../../assets/skeletons/skeleton_standing_up", new THREE.Vector3(-3, 0, -9.5), new THREE.Vector3(2, 2, 2), new THREE.Vector3(0, 0, 0));
+        this.addLoadableObject("../../assets/skeletons/skeleton_standing_up", new THREE.Vector3(3, 0, -9.5), new THREE.Vector3(2, 2, 2), new THREE.Vector3(0, 0, 0));
+
+        this.addLoadableObject("../../assets/skeletons/painting", new THREE.Vector3(-8, 5, -9.5), new THREE.Vector3(2, 2, 2), new THREE.Vector3(0, 0, 0));
         
     }
 

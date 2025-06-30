@@ -88,6 +88,8 @@ export class AltairRoom extends Room {
         this.key.rotateZ(Math.PI / 4);
         this.key.rotateY(Math.PI / 2);
         this.addInteractableObject(this.key);
+
+        this.addLoadableObject("../../assets/skeletons/skeleton_standing_up", new THREE.Vector3(-0.5, -1.4, 1.5), new THREE.Vector3(2, 2, 2), new THREE.Vector3(0, Math.PI / 2 + 0.7, 0));
     }
 
     getLightsDefinition() { 

@@ -78,7 +78,7 @@ function setupRooms(){
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['gem_room']; 
+    currentRoom = roomInstances['altair_room']; 
     scene.add(currentRoom);
 
     setupPlayer(roomInstances);
