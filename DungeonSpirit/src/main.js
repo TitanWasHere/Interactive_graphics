@@ -25,6 +25,7 @@ import { Spirit } from './skeletons/Spirit.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+import { textureLoad } from 'three/tsl';
 
 let scene, camera, renderer, composer, controls, audio;
 let currentLightsFolder, gui;
@@ -79,7 +80,7 @@ function setupRooms(){
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['start_room']; 
+    currentRoom = roomInstances['balcony_room']; 
     scene.add(currentRoom);
 
     setupPlayer(roomInstances);
@@ -111,8 +112,27 @@ function setupPlayer(roomInstances){
     
     scene.add(player.mesh);
     scene.add(player.mainLight);
-    addNPCSpirit("start_room"); // TODO: delete
+    //addNPCSpirit("start_room"); // TODO: ADD WHEN STARTING IN ROOM
+    checkRoomBackground("balcony_room");
     
+}
+
+function checkRoomBackground(roomName) {
+    if (roomName === "balcony_room") {
+        const textureLoader = new THREE.TextureLoader();
+        const backgroundTexture = textureLoader.load('../../textures/night_background.jpg', (texture) => {
+            scene.background = texture;
+        });
+        const messageBox = document.getElementById('message-box');
+        messageBox.textContent = "THANKS FOR PLAYING!";
+        messageBox.style.display = 'block';
+
+    }else{
+        scene.background = null; 
+        const messageBox = document.getElementById('message-box');
+        messageBox.textContent = "";
+        messageBox.style.display = 'none';
+    }
 }
 
 function setupInteraction() {
@@ -279,6 +299,7 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
     //console.log(`Switched to ${currentRoom.name}`);
 
     addNPCSpirit(newRoomName);
+    checkRoomBackground(newRoomName);
 }
 
 function addNPCSpirit(newRoomName){

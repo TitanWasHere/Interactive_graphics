@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Room } from '../skeletons/Room.js';
 
 export class BalconyRoom extends Room{
-    constructor(name = "Balcony Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
+    constructor(name = "Balcony Room", floorWidth = 20, floorDepth = 20, wallHeight = 3, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
         const doorConfig = {
             
             front: {
@@ -13,7 +13,7 @@ export class BalconyRoom extends Room{
                 interactable: true,
                 targetRoom: "start_room",
                 nameTargetRoom: "Start Room",
-                targetSpawnPoint: new THREE.Vector3(0, 1, floorDepth / 2 - 2), 
+                targetSpawnPoint: new THREE.Vector3(0, 1, -floorDepth / 2 + 2), 
             }
         }
 
@@ -39,8 +39,8 @@ export class BalconyRoom extends Room{
             this.setWall({
                 type: "texture",
                 textureUrl: wallTextureUrl,
-                textureRepeatX: textureRepeatWall.x || wallHeight / 5,
-                textureRepeatY: textureRepeatWall.y || wallHeight / 5
+                textureRepeatX: textureRepeatWall.x || wallHeight / 3,
+                textureRepeatY: textureRepeatWall.y || wallHeight / 15
             });
         }
 
