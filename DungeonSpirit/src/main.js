@@ -80,7 +80,7 @@ function setupRooms(){
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['balcony_room']; 
+    currentRoom = roomInstances['start_room']; 
     scene.add(currentRoom);
 
     setupPlayer(roomInstances);
@@ -112,8 +112,8 @@ function setupPlayer(roomInstances){
     
     scene.add(player.mesh);
     scene.add(player.mainLight);
-    //addNPCSpirit("start_room"); // TODO: ADD WHEN STARTING IN ROOM
-    checkRoomBackground("balcony_room");
+    addNPCSpirit("start_room"); // TODO: ADD WHEN STARTING IN ROOM
+    //checkRoomBackground("balcony_room");
     
 }
 
