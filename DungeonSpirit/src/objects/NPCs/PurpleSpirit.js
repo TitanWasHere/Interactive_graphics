@@ -30,6 +30,7 @@ export class PurpleSpirit extends Spirit {
         if (key) {
             inventory.removeItem(key);
             inventory.addItem(this.keyData);
+            player.keyGiven = true;
             //console.log(inventory.getAllItems());
             return true;
         } else {

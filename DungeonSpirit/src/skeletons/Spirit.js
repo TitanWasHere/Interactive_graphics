@@ -283,7 +283,7 @@ export class Spirit {
         this.lightDistance = distance;
         if (this.mainLight) {
             this.mainLight.distance = distance;
-            this.mainLight.shadow.camera.far = distance + 5; // Adjust shadow camera far plane
+            this.mainLight.shadow.camera.far = distance + 5; 
             this.mainLight.shadow.camera.updateProjectionMatrix();
         }
     }

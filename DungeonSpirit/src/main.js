@@ -19,7 +19,8 @@ import { AudioManager } from './managers/AudioManager.js';
 import { Player } from './player/Player.js';
 
 // -------- NPC ---------- 
-import { PurpleSpirit } from './objects/interactable/PurpleSpirit.js';
+import { PurpleSpirit } from './objects/NPCs/PurpleSpirit.js';
+import { GuardSpirit } from './objects/NPCs/GuardSpirit.js';
 import { Spirit } from './skeletons/Spirit.js';
 
 // -------- Default --------
@@ -35,7 +36,7 @@ let unlockable = false;
 let inventory;
 
 let clock;
-let player, newSpirit, guardSpirit1, guardSpirit2;
+let player, newSpirit, guardSpirit, guardSpirit1, guardSpirit2;
 
 const sceneManager = new SceneManager();
 scene = sceneManager.getScene();
@@ -78,7 +79,7 @@ function setupRooms(){
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['altair_room']; 
+    currentRoom = roomInstances['start_room']; 
     scene.add(currentRoom);
 
     setupPlayer(roomInstances);
@@ -94,8 +95,10 @@ function setupPlayer(roomInstances){
     newSpirit = new PurpleSpirit(new THREE.Vector3(0, 1, 7), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
     guardSpirit1 = new Spirit(new THREE.Vector3(4, 1, -5), 0x006622, 0x009933, 0x00cc44);
     guardSpirit2 = new Spirit(new THREE.Vector3(-4, 1, -3), 0x228b22, 0x33cc88, 0x66ffcc);
+
+    guardSpirit = new GuardSpirit(new THREE.Vector3(-4, 1, -7), 0x008080 , 0x00b3a4 , 0x66ffe0);
     
-    
+    roomInstances['start_room'].addNPC(guardSpirit);
     roomInstances['spirit_room'].addNPC(newSpirit);
 
     inventory = player.getInventory();
@@ -108,7 +111,7 @@ function setupPlayer(roomInstances){
     
     scene.add(player.mesh);
     scene.add(player.mainLight);
-    //addNPCSpirit("spirit_room"); // TODO: delete
+    addNPCSpirit("start_room"); // TODO: delete
     
 }
 
@@ -279,18 +282,25 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
 }
 
 function addNPCSpirit(newRoomName){
+    if( newRoomName === "start_room" ) {
+        scene.add(guardSpirit.mesh);
+        scene.add(guardSpirit.mainLight); 
+    }else{
+        scene.remove(guardSpirit.mesh);
+        scene.remove(guardSpirit.mainLight); 
+    }
+
     if( newRoomName === "spirit_room" ) {
         scene.add(newSpirit.mesh);
-        scene.add(newSpirit.mainLight); 
+        scene.add(newSpirit.mainLight);
 
         scene.add(guardSpirit1.mesh);
         scene.add(guardSpirit1.mainLight);
         scene.add(guardSpirit2.mesh);
         scene.add(guardSpirit2.mainLight);
-
     }else{
         scene.remove(newSpirit.mesh);
-        scene.remove(newSpirit.mainLight); 
+        scene.remove(newSpirit.mainLight);
 
         scene.remove(guardSpirit1.mesh);
         scene.remove(guardSpirit1.mainLight);
@@ -433,6 +443,7 @@ function animate() {
 
     player.update(deltaTime, elapsedTime, currentRoom);
     newSpirit.update(deltaTime, elapsedTime); 
+    guardSpirit.update(deltaTime, elapsedTime);
     guardSpirit1.update(deltaTime, elapsedTime);
     guardSpirit2.update(deltaTime, elapsedTime);
 

@@ -122,7 +122,7 @@ export class CorridorRoom extends Room {
         this.addObject(this.column4);
     }
 
-    getLightsDefinition(){ // For now just an example, to customize
+    getLightsDefinition(){ 
         return [
             {
                 type: 'AmbientLight',

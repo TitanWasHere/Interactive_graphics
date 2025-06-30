@@ -9,7 +9,7 @@ export class Sword extends THREE.Group {
         this.name = "sword";
         this.isInteractable = true; 
         this.itemData = swordData || {
-            name: "Sword",
+            name: "sword",
             description: "A sharp sword for combat.",
             quantity: 1,
             id: "3"

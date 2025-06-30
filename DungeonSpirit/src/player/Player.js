@@ -9,6 +9,8 @@ export class Player extends Spirit {
         
         this.inventory = new Inventory();
 
+        this.keyGiven = false;
+
         this.setupInput();
     }    
 
@@ -168,7 +170,7 @@ export class Player extends Spirit {
         this.updateMovement(deltaTime, elapsedTime);
         this.updateBubbles(deltaTime, elapsedTime);
         this.updateFireParticles(deltaTime, elapsedTime);
-        
+
         this.checkNearbyDoors(currentRoom);
         this.checkNearbyObjects(currentRoom);
         this.checkNearbyNPCs(currentRoom);
