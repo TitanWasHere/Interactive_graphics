@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Room } from '../skeletons/Room';
 import { Door } from '../objects/interactable/Door';
 
+
 export class SpiritRoom extends Room{
     constructor(name = "Spirit Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_grass_wall.png", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
         const doorConfig = {
@@ -67,8 +68,8 @@ export class SpiritRoom extends Room{
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(5.5, 0, -this.floorHeight / 2  + 2), new THREE.Vector3(0.3, 0.3, 0.3), new THREE.Vector3(0, Math.PI / 2, 0));
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-5, 0, -7), new THREE.Vector3(0.2, 0.2, 0.2));
         this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-7, 0, 5), new THREE.Vector3(0.2, 0.2, 0.2), new THREE.Vector3(0, -Math.PI / 2, 0));
-        this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-4, 0, 4), new THREE.Vector3(0.3, 0.3, 0.3), new THREE.Vector3(0, 0, 0));
-        this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-10.8, 12, 0), new THREE.Vector3(0.2, 0.2, 0.2), new THREE.Vector3(0, 0, Math.PI));
+        //  this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-4, 0, 4), new THREE.Vector3(0.3, 0.3, 0.3), new THREE.Vector3(0, 0, 0));
+        //this.addLoadableObject(plantsPath + "tree_in_OBJ", new THREE.Vector3(-10.8, 12, 0), new THREE.Vector3(0.2, 0.2, 0.2), new THREE.Vector3(0, 0, Math.PI));
     }
 
     getLightsDefinition(){ // For now just an example, to customize

@@ -32,6 +32,7 @@ class Room extends THREE.Group {
         this.materials = {};
         this.doors = [];
         this.objects = [];
+        this.interactiveStructures = [];
         this.NPCs = [];
 
         this._startFloor();
@@ -242,6 +243,15 @@ class Room extends THREE.Group {
         });
     }
 
+    addInteractableStructure(structure) {
+        if (structure instanceof THREE.Object3D || structure instanceof THREE.Mesh) {
+            this.interactiveStructures.push(structure);
+            this.add(structure);
+        }else {
+            console.error("Structure must be an instance of THREE.Object3D");
+        }
+    }
+
     addInteractableObject(object) {
         if (object instanceof THREE.Object3D || object instanceof THREE.Mesh) {
             this.objects.push(object);
@@ -257,6 +267,10 @@ class Room extends THREE.Group {
         if (object.dispose) {
             object.dispose();
         }
+    }
+
+    getInteractableStructures() {
+        return this.interactiveStructures.filter(structure => structure.isInteractable);
     }
 
     getInteractableObjects() {

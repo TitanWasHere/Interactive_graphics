@@ -78,7 +78,7 @@ function setupRooms(){
     roomInstances['gem_room'] = new GemRoom();
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
-    currentRoom = roomInstances['spirit_room']; 
+    currentRoom = roomInstances['gem_room']; 
     scene.add(currentRoom);
 
     setupPlayer(roomInstances);
@@ -108,7 +108,7 @@ function setupPlayer(roomInstances){
     
     scene.add(player.mesh);
     scene.add(player.mainLight);
-    addNPCSpirit("spirit_room"); // TODO: delete
+    //addNPCSpirit("spirit_room"); // TODO: delete
     
 }
 
@@ -122,7 +122,7 @@ function handleInteractionKey(event) {
     if (event.key.toLowerCase() === 'i') { 
         
 
-        if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject && !player.currentInteractableNPC)) {
+        if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject && !player.currentInteractableNPC && !player.currentInteractableStructure)) {
             return;
         }
 
@@ -150,8 +150,6 @@ function handleInteractionKey(event) {
 
         
         if (player.currentInteractableNPC) {
-            //console.log("Interacting with NPC:", player.currentInteractableNPC.name);
-
             const npc = player.currentInteractableNPC;
             console.log("Interacting with NPC:", npc.name);
             if (npc.isInteractable) {
@@ -166,26 +164,15 @@ function handleInteractionKey(event) {
                     interactionPromptElement.style.display = 'none';
                     interactionPromptElement.textContent = '';
                 }, 4000);
+            }
+            return;
+        }
 
-                /*if (resp){
-                    const messageBox = document.getElementById('message-box');
-
-                    messageBox.textContent = "[Purple spirit]: As I said, this is your key!";
-                    messageBox.style.display = 'block';
-                    setTimeout(() => {
-                        messageBox.style.display = 'none';
-                        interactionBox.style.display = 'block';
-                    }, 4000); 
-                }else{
-                    const messageBox = document.getElementById('message-box');
-
-                    messageBox.textContent = "[Purple spirit]: Give me the sword of a warrior and I will reward you.";
-                    messageBox.style.display = 'block';
-                    setTimeout(() => {
-                        messageBox.style.display = 'none';
-                        interactionBox.style.display = 'block';
-                    }, 4000); 
-                }*/
+        if (player.currentInteractableStructure) {
+            const structure = player.currentInteractableStructure;
+            console.log("Interacting with structure:", structure.name);
+            if (structure.toggle) {
+                structure.toggle();
             }
             return;
         }
@@ -416,7 +403,21 @@ function interactObject() {
     const object = player.currentInteractableObject;
     
     if (object) {
+        console.log("Interacting with object:", object);
         interactionPromptElement.textContent = `Press [I] to take ${object.itemData.name}`;
+    } else {
+        interactionPromptElement.style.display = 'none';
+        interactionPromptElement.textContent = '';
+        unlockable = false;
+    }
+}
+
+function interactStructure() {
+    interactionPromptElement.style.display = 'block';
+    const structure = player.currentInteractableStructure;
+    
+    if (structure) {
+        interactionPromptElement.textContent = `Press [I] to ${structure.typeInteraction} ${structure.name}`;
     } else {
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
@@ -436,13 +437,16 @@ function animate() {
     guardSpirit2.update(deltaTime, elapsedTime);
 
     //console.log(player.currentInteractableNPC);
-    if(player.currentInteractableDoor || player.currentInteractableObject || player.currentInteractableNPC){
+    if(player.currentInteractableDoor || player.currentInteractableObject || player.currentInteractableNPC || player.currentInteractableStructure){
         if(player.currentInteractableDoor)
             interactDoor();
-        else if(player.currentInteractableNPC != null)
+        else if(player.currentInteractableNPC)
             interactNPC();
         else if(player.currentInteractableObject)
             interactObject();
+        else if(player.currentInteractableStructure)
+            interactStructure();
+
     }else{
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';

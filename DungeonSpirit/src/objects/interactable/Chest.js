@@ -11,6 +11,8 @@ export class Chest extends THREE.Group {
         this.lidGroup = null;
         this.isOpen = false;
 
+        this.isInteractable = true; 
+
         this.chestWidth = chestWidth;
         this.chestBodyHeight = chestTotalHeight * (1 - lidHeightRatio);
         this.lidHeight = chestTotalHeight * lidHeightRatio;
@@ -22,6 +24,9 @@ export class Chest extends THREE.Group {
         this.goldMaterial = new THREE.MeshStandardMaterial({ color: 0xFFD700, roughness: 0.4, metalness: 0.6 });
 
         this.createMesh();
+        this.toggle();
+        this.typeInteraction = this.isOpen ? "close" : "open";
+        this.name = "chest";
     }
 
     createMesh() {
@@ -38,39 +43,38 @@ export class Chest extends THREE.Group {
         const bandGeo = new THREE.BoxGeometry(this.chestWidth + 0.02, bandThickness, this.chestDepth + 0.02);
 
         const band1Mesh = new THREE.Mesh(bandGeo, this.metalMaterial);
-        band1Mesh.position.y = this.chestBodyHeight * 0.25; // Position center of band
+        band1Mesh.position.y = this.chestBodyHeight * 0.25; 
         band1Mesh.castShadow = true;
         band1Mesh.receiveShadow = true;
         this.add(band1Mesh);
 
         const band2Mesh = new THREE.Mesh(bandGeo, this.metalMaterial);
-        band2Mesh.position.y = this.chestBodyHeight * 0.75; // Position center of band
+        band2Mesh.position.y = this.chestBodyHeight * 0.75; 
         band2Mesh.castShadow = true;
         band2Mesh.receiveShadow = true;
         this.add(band2Mesh);
 
-        // Lid Group (for easy opening/closing)
         this.lidGroup = new THREE.Group();
-        this.lidGroup.position.set(0, this.chestBodyHeight, -this.chestDepth / 2 + this.lidHeight / 2); // Pivot
+        this.lidGroup.position.set(0, this.chestBodyHeight, -this.chestDepth / 2 + this.lidHeight / 2); 
         this.add(this.lidGroup);
 
         const lidGeo = new THREE.BoxGeometry(this.chestWidth, this.lidHeight, this.chestDepth);
         const lidMesh = new THREE.Mesh(lidGeo, this.darkWoodMaterial);
-        lidMesh.position.y = 0; // Relative to lidGroup pivot (centered vertically at pivot)
-        lidMesh.position.z = this.chestDepth / 2 - this.lidHeight / 2; // Adjust to align back of lid with pivot
+        lidMesh.position.y = 0; 
+        lidMesh.position.z = this.chestDepth / 2 - this.lidHeight / 2;
         lidMesh.castShadow = true;
         lidMesh.receiveShadow = true;
         this.lidGroup.add(lidMesh);
 
         // Lid Bands (Simplified)
-        const lidBandGeo = new THREE.BoxGeometry(this.chestWidth + 0.02, bandThickness, this.lidHeight * 0.8); // Bands are slightly shorter than lid depth
+        const lidBandGeo = new THREE.BoxGeometry(this.chestWidth + 0.02, bandThickness, this.lidHeight * 0.8); 
         const lidBandMesh1 = new THREE.Mesh(lidBandGeo, this.metalMaterial);
-        lidBandMesh1.position.z = (this.chestDepth / 2 - this.lidHeight / 2) + this.chestDepth * 0.2; // Position relative to lidMesh
+        lidBandMesh1.position.z = (this.chestDepth / 2 - this.lidHeight / 2) + this.chestDepth * 0.2; 
         lidBandMesh1.castShadow = true;
         this.lidGroup.add(lidBandMesh1);
 
         const lidBandMesh2 = new THREE.Mesh(lidBandGeo, this.metalMaterial);
-        lidBandMesh2.position.z = (this.chestDepth / 2 - this.lidHeight / 2) - this.chestDepth * 0.2; // Position relative to lidMesh
+        lidBandMesh2.position.z = (this.chestDepth / 2 - this.lidHeight / 2) - this.chestDepth * 0.2; 
         lidBandMesh2.castShadow = true;
         this.lidGroup.add(lidBandMesh2);
 
@@ -96,7 +100,10 @@ export class Chest extends THREE.Group {
             this.isOpen = false;
         }
     }
-    toggle() { (this.isOpen) ? this.close() : this.open(); }
+    toggle() { 
+        (this.isOpen) ? this.close() : this.open(); 
+        this.typeInteraction = this.isOpen ? "close" : "open";
+    }
 
     getMesh() { return this; }
     dispose() {

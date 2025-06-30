@@ -6,6 +6,7 @@ import { Barrel } from '../objects/non_interactable/Barrel.js';
 import { Column } from '../objects/non_interactable/Column.js';
 import { Torch } from '../objects/non_interactable/Torch.js';
 import { Key } from '../objects/interactable/Key.js';
+import { Carpet } from '../objects/non_interactable/Carpet.js';
 
 
 export class AltairRoom extends Room {
@@ -20,7 +21,7 @@ export class AltairRoom extends Room {
                 interactable: true,
                 targetRoom: "corridor_room",
                 nameTargetRoom: "Corridor Room",
-                targetSpawnPoint: new THREE.Vector3(-floorWidth / 2 + 2, 1, 0), 
+                targetSpawnPoint: new THREE.Vector3(-14 , 1, 0), 
             },
             front: {
                 wallSide: "front",
@@ -73,6 +74,8 @@ export class AltairRoom extends Room {
 
         this.addObject(new Torch(new THREE.Vector3(-2.9, 6, 4)));
         this.addObject(new Torch(new THREE.Vector3(-2.9, 6, -4)));
+
+        this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 8,8, 0xa400d1));
 
         const keyData = {
             name: "Key",

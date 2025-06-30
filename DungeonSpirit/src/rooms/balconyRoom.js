@@ -50,4 +50,26 @@ export class BalconyRoom extends Room{
     setupRoom(){
 
     }
+
+    getLightsDefinition(){ // For now just an example, to customize
+        return [
+            {
+                type: 'AmbientLight',
+                color: 0xffffff, 
+                intensity: 0.0
+            },
+            {
+                type: 'DirectionalLight',
+                color: 0xffffff, 
+                intensity: 1.0,  
+                position: { x: 5, y: 10, z: 5 }, 
+                castShadow: true, 
+                shadowCamera: {
+                    left: -15, right: 15, top: 15, bottom: -15, 
+                    near: 0.1, far: 50,
+                    mapSize: { width: 1024, height: 1024 } 
+                }
+            }
+        ];
+    }
 }

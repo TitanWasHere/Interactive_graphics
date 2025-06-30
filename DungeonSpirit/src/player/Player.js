@@ -128,6 +128,27 @@ export class Player extends Spirit {
         }
     }
 
+    checkNearbyStructures(room) {
+        this.currentInteractableStructure = null; 
+        if (!room || !room.getInteractableStructures) return;
+
+        const interactableStructures = room.getInteractableStructures();
+        let closestStructure = null;
+        let minDistanceSq = this.interactionDistance * this.interactionDistance;
+
+        for (const structureData of interactableStructures) {
+            // Check distance to the structure's visual center point
+            const distanceSq = this.mesh.position.distanceToSquared(structureData.position);
+            if (distanceSq < minDistanceSq) {
+                minDistanceSq = distanceSq;
+                closestStructure = structureData; 
+            }
+        }
+        if (closestStructure) {
+            this.currentInteractableStructure = closestStructure;
+        }
+    }
+
     getInventory() {
         return this.inventory;
     }
@@ -147,9 +168,11 @@ export class Player extends Spirit {
         this.updateMovement(deltaTime, elapsedTime);
         this.updateBubbles(deltaTime, elapsedTime);
         this.updateFireParticles(deltaTime, elapsedTime);
+        
         this.checkNearbyDoors(currentRoom);
         this.checkNearbyObjects(currentRoom);
         this.checkNearbyNPCs(currentRoom);
+        this.checkNearbyStructures(currentRoom);
     }    
 
     updateMovement(deltaTime, elapsedTime) {
