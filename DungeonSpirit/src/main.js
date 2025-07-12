@@ -25,7 +25,6 @@ import { Spirit } from './skeletons/Spirit.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
-import { textureLoad } from 'three/tsl';
 
 let scene, camera, renderer, composer, controls, audio;
 let currentLightsFolder, gui;
@@ -483,6 +482,10 @@ function animate() {
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
         unlockable = false;
+    }
+
+    if(currentRoom == roomInstances['balcony_room']) {
+        currentRoom.getPortal().update(deltaTime);
     }
     
     controls.update();

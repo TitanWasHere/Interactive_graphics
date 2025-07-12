@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { Room } from '../skeletons/Room.js';
+import { Portal } from '../objects/non_interactable/Portal.js';
+import { Column } from '../objects/non_interactable/Column.js';
 
 export class BalconyRoom extends Room{
     constructor(name = "Balcony Room", floorWidth = 20, floorDepth = 20, wallHeight = 3, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
@@ -48,15 +50,33 @@ export class BalconyRoom extends Room{
     }
 
     setupRoom(){
+        console.log("AOOOO");
+        this.portal = new Portal(new THREE.Vector3(0, 5, -8), 10, 5);
+        this.add(this.portal);
 
+        this.add(new Column(new THREE.Vector3(-10, 0, 0), 1,1/2, 1 * 3 / 5,2));
+        this.add(new Column(new THREE.Vector3(-10, 0, 7), 1,1/2,1* 3 / 5,7));
+        this.add(new Column(new THREE.Vector3(-10, 0, -7), 1,1/2,1 * 3 / 5,2));
+
+        this.add(new Column(new THREE.Vector3(0, 0, -10), 1,1/2,1 * 3 / 5,2));
+        this.add(new Column(new THREE.Vector3(7, 0, -10), 1,1/2,1 * 3 / 5,2));
+        this.add(new Column(new THREE.Vector3(-7, 0,-10), 1,1/2,1 * 3 / 5,2));
+
+        this.add(new Column(new THREE.Vector3(10, 0, 0), 1,1/2, 1 * 3 / 5,2));
+        this.add(new Column(new THREE.Vector3(10, 0, 7), 1,1/2,1* 3 / 5,7));
+        this.add(new Column(new THREE.Vector3(10, 0, -7), 1,1/2,1 * 3 / 5,2));
+    }
+
+    getPortal() {
+        return this.portal;
     }
 
     getLightsDefinition(){ // For now just an example, to customize
         return [
             {
                 type: 'AmbientLight',
-                color: 0xffffff, 
-                intensity: 0.0
+                color: 0x00ebcf, 
+                intensity: 5.0
             },
             {
                 type: 'DirectionalLight',
