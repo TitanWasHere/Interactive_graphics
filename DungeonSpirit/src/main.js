@@ -69,8 +69,8 @@ initStartMenu();
 
 function initStartMenu() {
     startMenu = new StartMenu(
-        startGame,      
-        exitGame        
+        startGame,     
+        exitGame       
     );
 }
 

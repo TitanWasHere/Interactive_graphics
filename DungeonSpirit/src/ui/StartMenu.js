@@ -1,7 +1,6 @@
 export class StartMenu {
-    constructor(onStartGame, onSettings, onExit) {
+    constructor(onStartGame, onExit) {
         this.onStartGame = onStartGame;
-        this.onSettings = onSettings;
         this.onExit = onExit;
         this.isVisible = true;
         this.gameHasStarted = false; // Track if game has been started at least once
