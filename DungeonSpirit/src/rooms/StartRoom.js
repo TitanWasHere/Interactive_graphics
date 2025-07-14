@@ -66,15 +66,19 @@ export class StartRoom extends Room {
         this.addObject(door);
 
         //this.addObject(new Barrel(new THREE.Vector3(-this.floorHeight / 2 + 1, 0, this.floorWidth / 2 -1)));
-        this.addObject(new Column(new THREE.Vector3(-this.floorWidth/2 + 4,0, -this.floorHeight/4)));
+        this.addObject(new Column(new THREE.Vector3(-this.floorWidth/2 + 4 ,0, -this.floorHeight/4)));
         this.addObject(new Column(new THREE.Vector3(-this.floorWidth/2 + 4,0, this.floorHeight/4)));
 
         this.addObject(new Column(new THREE.Vector3(this.floorWidth/2 - 4,0, -this.floorHeight/4)));
         this.addObject(new Column(new THREE.Vector3(this.floorWidth/2 - 4,0, this.floorHeight/4), 1,0.5,1,1));
 
-        const torch1 = new TorchLight(new THREE.Vector3(0, 1,0), 0.1, 1, 0xffa500);
+        const torch1 = new TorchLight(new THREE.Vector3(-this.floorWidth/2 + 4 , 7,-this.floorHeight/4 + 0.7), 0.1, 1, 0xffa500);
         this.torches.push(torch1);
         this.addObject(torch1);
+
+        const torch2 = new TorchLight(new THREE.Vector3(this.floorWidth/2 - 4, 7,-this.floorHeight/4 + 0.7), 0.1, 1, 0xffa500);
+        this.torches.push(torch2);
+        this.addObject(torch2);
 
         
     }

@@ -28,3 +28,108 @@ canvas {
     max-width: 90vw; 
 
 }
+
+/* Start Menu Styles */
+.start-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, rgb(0, 0, 0), rgba(20, 20, 40, 0.9));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-family: 'Arial', sans-serif;
+}
+
+.menu-background {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff0000;
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.game-title {
+    color: #ff0000;
+    font-size: 3em;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+    margin-bottom: 30px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.menu-btn {
+    padding: 15px 40px;
+    font-size: 1.2em;
+    border: 2px solid #ff0000;
+    background: transparent;
+    color: #ff0000;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    min-width: 200px;
+}
+
+.menu-btn:hover {
+    background: #ff0000;
+    color: #000;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+    transform: translateY(-2px);
+}
+
+.menu-btn.primary {
+    background: #ff0000;
+    color: #000;
+}
+
+.menu-btn.primary:hover {
+    background: #ff3333;
+    transform: scale(1.05);
+}
+
+.menu-footer {
+    color: #ccc;
+    font-size: 0.9em;
+    margin-top: 20px;
+}
+
+.menu-footer p {
+    margin: 5px 0;
+}
+
+/* Loading animation */
+.loading {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .game-title {
+        font-size: 2em;
+    }
+    
+    .menu-btn {
+        padding: 12px 30px;
+        font-size: 1em;
+    }
+}

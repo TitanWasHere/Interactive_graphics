@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export class TorchLight extends THREE.Group {
-    constructor(position = new THREE.Vector3(0, 0, 0), radius = 0.1, height = 1, color = 0xffa500) {
+    constructor(position = new THREE.Vector3(0, 0, 0), radius = 0.1, height = 1, color = 0xffa500, intensity = 10, distance = 10) {
         super();
         this.position.copy(position);
 
@@ -13,6 +13,9 @@ export class TorchLight extends THREE.Group {
         this.handleRadius = radius;
         this.flameHeight = 0.4;
         this.lightColor = color;
+
+        this.intensity = intensity;
+        this.distance = distance;
 
         this.setupHandle();
         this.setupFlame();
@@ -53,7 +56,7 @@ export class TorchLight extends THREE.Group {
     }
     
     setupLight() {
-        this.light = new THREE.PointLight(this.lightColor, 20, 30, 1);
+        this.light = new THREE.PointLight(this.lightColor, this.intensity, this.distance, 1);
         this.light.castShadow = true;
 
         this.light.position.y = this.handleHeight + this.flameHeight / 2;

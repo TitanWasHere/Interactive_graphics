@@ -23,6 +23,9 @@ import { PurpleSpirit } from './objects/NPCs/PurpleSpirit.js';
 import { GuardSpirit } from './objects/NPCs/GuardSpirit.js';
 import { Spirit } from './skeletons/Spirit.js';
 
+// -------- UI --------
+import { StartMenu } from './ui/StartMenu.js';
+
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 
@@ -30,6 +33,10 @@ let scene, camera, renderer, composer, controls, audio;
 let currentLightsFolder, gui;
 let currentRoom;
 let interactionPromptElement;
+
+// ------- Game state -------
+let gameStarted = false;
+let startMenu;
 
 // ------- Player state -------
 let unlockable = false;
@@ -49,18 +56,80 @@ composer = renderManager.getComposer();
 
 const controlsManager = new ControlsManager(camera, renderer.domElement);
 controls = controlsManager.getControls();
+controls.enabled = false; // Disable controls until game starts
 
 let lightsManager = new LightsManager(scene, renderer);
 let roomInstances = {};
 
-//let newSpirit;
 
-init();
+initStartMenu();
 
-animate(); 
+function initStartMenu() {
+    startMenu = new StartMenu(
+        startGame,      
+        exitGame        
+    );
+}
+
+function startGame() {
+    if (!gameStarted) {
+        init();
+        animate();
+        gameStarted = true;
+        
+        // Start the music when game begins
+        if (audio) {
+            audio.play();
+        }
+        
+        // Enable controls and hide cursor for game mode
+        controls.enabled = true;
+        document.body.style.cursor = 'none';
+        
+        // Enable pointer lock
+        renderer.domElement.addEventListener('click', () => {
+            renderer.domElement.requestPointerLock();
+        });
+    } else {
+        // Resume game if already started
+        controls.enabled = true;
+        document.body.style.cursor = 'none';
+        
+        // Resume music if it was paused
+        if (audio && audio.isLoaded && !audio.isPlaying) {
+            audio.play();
+        }
+    }
+}
+
+function showSettings() {
+    alert('Settings panel coming soon!');
+}
+
+function exitGame() {
+    if (confirm('Are you sure you want to exit?')) {
+        window.close();
+    }
+}
+
+function pauseGame() {
+    if (gameStarted && startMenu) {
+        controls.enabled = false;
+        document.body.style.cursor = 'default';
+        document.exitPointerLock();
+        
+        // Pause music when game is paused
+        if (audio && audio.isPlaying) {
+            audio.pause();
+        }
+        
+        startMenu.show();
+    }
+} 
 
 function init(){
     clock = new THREE.Clock();
+    audio = new AudioManager(camera);
     
     setupRooms();
     setupGUI();
@@ -90,7 +159,6 @@ function setupRooms(){
 function setupPlayer(roomInstances){
     
     player = new Player(new THREE.Vector3(0, 1, 0));
-
     
     newSpirit = new PurpleSpirit(new THREE.Vector3(0, 1, 7), 0xee00ff, 0x9900cc, 0xcc33ff, 0xff66ff);
     guardSpirit1 = new Spirit(new THREE.Vector3(4, 1, -5), 0x006622, 0x009933, 0x00cc44);
@@ -102,17 +170,11 @@ function setupPlayer(roomInstances){
     roomInstances['spirit_room'].addNPC(newSpirit);
 
     inventory = player.getInventory();
-    /*inventory.addItem({
-        id: "1",
-        name: "Key",
-        description: "A small key that unlocks a door.",
-        quantity: 1
-    });*/
     
     scene.add(player.mesh);
     scene.add(player.mainLight);
-    addNPCSpirit("start_room"); // TODO: ADD WHEN STARTING IN ROOM
-    //checkRoomBackground("balcony_room");
+    addNPCSpirit("start_room"); 
+
     
 }
 
@@ -137,6 +199,13 @@ function checkRoomBackground(roomName) {
 function setupInteraction() {
     interactionPromptElement = document.getElementById('interaction-prompt');
     window.addEventListener('keydown', handleInteractionKey);
+    
+    // Add ESC key handler to show menu
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && gameStarted && startMenu && !startMenu.isVisible) {
+            pauseGame();
+        }
+    });
 }
 
 function handleInteractionKey(event) {
@@ -221,7 +290,7 @@ function enterDoor(doorDefinition) {
 function setupGUI() {
     gui = new GUI();
 
-    audio = new AudioManager(camera);
+    
     
     const audioFolder = gui.addFolder('Audio Controls');
     
@@ -457,6 +526,11 @@ function interactStructure() {
 
 function animate() {
     requestAnimationFrame(animate);
+
+    // Only update game when started and menu is hidden
+    if (!gameStarted || (startMenu && startMenu.isVisible)) {
+        return;
+    }
 
     const deltaTime = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();

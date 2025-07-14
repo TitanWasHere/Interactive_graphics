@@ -5,6 +5,7 @@ import { Column } from '../objects/non_interactable/Column.js';
 import { Door } from '../objects/interactable/Door.js';
 import { Torch } from '../objects/non_interactable/Torch.js';
 import { Carpet } from '../objects/non_interactable/Carpet.js';
+import { TorchLight } from '../objects/non_interactable/TorchLight.js';
 
 export class CorridorRoom extends Room {
     constructor(name = "Corridor Room", floorWidth = 30, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10 ) {
@@ -87,10 +88,23 @@ export class CorridorRoom extends Room {
         
         const posX = 13.3;
         const posZ = 5;
-        this.addObject(new Torch(new THREE.Vector3(-posX, 6, posZ)));
-        this.addObject(new Torch(new THREE.Vector3(-posX, 6, -posZ)));
-        this.addObject(new Torch(new THREE.Vector3(posX, 6, posZ)));
-        this.addObject(new Torch(new THREE.Vector3(posX, 6, -posZ)));
+        //this.addObject(new Torch(new THREE.Vector3(-posX, 6, posZ)));
+        //this.addObject(new Torch(new THREE.Vector3(-posX, 6, -posZ)));
+        //this.addObject(new Torch(new THREE.Vector3(posX, 6, posZ)));
+        //this.addObject(new Torch(new THREE.Vector3(posX, 6, -posZ)));
+
+        const torch1 = new TorchLight(new THREE.Vector3(-posX, 7, posZ), 0.1, 1, 0xffa500, 5, 2);
+        this.torches.push(torch1);
+        this.addObject(torch1);
+        const torch2 = new TorchLight(new THREE.Vector3(-posX, 7, -posZ), 0.1, 1, 0xffa500, 5,2);
+        this.torches.push(torch2);
+        this.addObject(torch2);
+        const torch3 = new TorchLight(new THREE.Vector3(posX, 7, posZ), 0.1, 1, 0xffa500, 5,2);
+        this.torches.push(torch3);
+        this.addObject(torch3);
+        const torch4 = new TorchLight(new THREE.Vector3(posX, 7, -posZ), 0.1, 1, 0xffa500, 5,2);
+        this.torches.push(torch4);
+        this.addObject(torch4);
 
         this.addObject(new Carpet(new THREE.Vector3(0, 0, 0), 28, 5));
 
@@ -106,7 +120,6 @@ export class CorridorRoom extends Room {
 
     #setupColumns(){
         const base_width = 2;
-        const base_height = 1;
 
         //this.column = new Column(new THREE.Vector3(0, 0, -this.floorWidth / 2 + base_width / 2), base_width, base_height, base_width * 3/5, this.wallHeight - base_height*2 , base_width, base_height );
         this.column = new Column(new THREE.Vector3(-this.floorWidth/2 + base_width / 2, 0, -this.floorHeight / 4));
