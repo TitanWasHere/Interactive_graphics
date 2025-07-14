@@ -487,6 +487,10 @@ function animate() {
     if(currentRoom == roomInstances['balcony_room']) {
         currentRoom.getPortal().update(deltaTime);
     }
+
+    for(const torch of currentRoom.torches) {
+        torch.update(elapsedTime, deltaTime);
+    }
     
     controls.update();
     composer.render();

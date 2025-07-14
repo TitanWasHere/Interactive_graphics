@@ -34,6 +34,7 @@ class Room extends THREE.Group {
         this.objects = [];
         this.interactiveStructures = [];
         this.NPCs = [];
+        this.torches = [];
 
         this._startFloor();
         this._startWalls();
@@ -151,8 +152,8 @@ class Room extends THREE.Group {
                 texture.wrapT = THREE.RepeatWrapping;
 
                 const repeatX = config.textureRepeatX !== undefined ? config.textureRepeatX : 3;
-                const repeatY = config.textureRepeatY !== undefined ? config.textureRepeatY : 1; // Changed default from 2 to 1
-            
+                const repeatY = config.textureRepeatY !== undefined ? config.textureRepeatY : 1; 
+                
 
                 texture.repeat.set(repeatX, repeatY);
                 texture.colorSpace = THREE.SRGBColorSpace;

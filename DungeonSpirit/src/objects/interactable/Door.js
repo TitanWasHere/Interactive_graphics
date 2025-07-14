@@ -17,7 +17,7 @@ export class Door extends THREE.Group {
         this.orientation = orientation; 
         this.definition = doorDefinition; 
 
-        this.boundingBox = new THREE.Box3();  // TODO (In all game)
+        this.boundingBox = new THREE.Box3();  // TODO (In all game) --> never done
 
         this.createMesh();
         this.updateBoundingBox();

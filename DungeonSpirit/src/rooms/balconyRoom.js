@@ -50,7 +50,6 @@ export class BalconyRoom extends Room{
     }
 
     setupRoom(){
-        console.log("AOOOO");
         this.portal = new Portal(new THREE.Vector3(0, 5, -8), 10, 5);
         this.add(this.portal);
 

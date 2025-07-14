@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { Room } from '../skeletons/Room.js';
 import { Door } from '../objects/interactable/Door.js';
-import { Barrel } from '../objects/non_interactable/Barrel.js';
 import { Column } from '../objects/non_interactable/Column.js';
+import { TorchLight } from '../objects/non_interactable/TorchLight.js';
 
 export class StartRoom extends Room {
     constructor(name = "Start Room", floorWidth = 20, floorDepth = 20, wallHeight = 13, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
@@ -71,7 +71,15 @@ export class StartRoom extends Room {
 
         this.addObject(new Column(new THREE.Vector3(this.floorWidth/2 - 4,0, -this.floorHeight/4)));
         this.addObject(new Column(new THREE.Vector3(this.floorWidth/2 - 4,0, this.floorHeight/4), 1,0.5,1,1));
+
+        const torch1 = new TorchLight(new THREE.Vector3(0, 1,0), 0.1, 1, 0xffa500);
+        this.torches.push(torch1);
+        this.addObject(torch1);
+
+        
     }
+
+    
 
     getLightsDefinition(){ 
         return [
@@ -94,5 +102,6 @@ export class StartRoom extends Room {
             }
         ];
     }
+
 
 }
