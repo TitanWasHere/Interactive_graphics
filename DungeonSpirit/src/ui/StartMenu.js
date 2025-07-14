@@ -4,6 +4,7 @@ export class StartMenu {
         this.onSettings = onSettings;
         this.onExit = onExit;
         this.isVisible = true;
+        this.gameHasStarted = false; // Track if game has been started at least once
         
         this.createMenuHTML();
         this.setupEventListeners();
@@ -36,6 +37,7 @@ export class StartMenu {
     setupEventListeners() {
         document.getElementById('start-game-btn').addEventListener('click', () => {
             this.hide();
+            this.gameHasStarted = true; // Mark that game has been started
             this.onStartGame();
         });
 
@@ -59,6 +61,9 @@ export class StartMenu {
         this.menuContainer.style.display = 'flex';
         this.isVisible = true;
         
+        // Update button text based on game state
+        this.updateButtonText();
+        
         document.body.style.cursor = 'default';
     }
 
@@ -67,6 +72,17 @@ export class StartMenu {
         this.isVisible = false;
         
         document.body.style.cursor = 'none'; 
+    }
+
+    updateButtonText() {
+        const startButton = document.getElementById('start-game-btn');
+        if (startButton) {
+            if (this.gameHasStarted) {
+                startButton.textContent = 'Continue Game';
+            } else {
+                startButton.textContent = 'Start Game';
+            }
+        }
     }
 
     destroy() {

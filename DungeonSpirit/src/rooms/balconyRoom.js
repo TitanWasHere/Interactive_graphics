@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { Room } from '../skeletons/Room.js';
 import { Portal } from '../objects/non_interactable/Portal.js';
 import { Column } from '../objects/non_interactable/Column.js';
+import { DummyObject } from '../objects/interactable/DummyObject.js';
 
 export class BalconyRoom extends Room{
-    constructor(name = "Balcony Room", floorWidth = 20, floorDepth = 20, wallHeight = 3, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
+    constructor(name = "Balcony Room",onPortalActivate = null, floorWidth = 20, floorDepth = 20, wallHeight = 3, textureRepeatFloor = {}, textureRepeatWall = {}, floorTextureUrl = "../../textures/floor_mold.jpg", wallTextureUrl = "../../textures/brick_wall.jpg", tilePrimary = 0x777777, tileSecondary = 0x555555, tileSize = 10) {
         const doorConfig = {
             
             front: {
@@ -20,6 +21,8 @@ export class BalconyRoom extends Room{
         }
 
         super(floorWidth, floorDepth, wallHeight, name, doorConfig, tileSize, tilePrimary, tileSecondary);
+        
+        this.onPortalActivate = onPortalActivate; 
 
         if (floorTextureUrl) {
             this.setFloor({
@@ -51,7 +54,15 @@ export class BalconyRoom extends Room{
 
     setupRoom(){
         this.portal = new Portal(new THREE.Vector3(0, 5, -8), 10, 5);
-        this.add(this.portal);
+        this.add(this.portal)
+        
+        // Create DummyObject with portal activation callback
+        this.addInteractableStructure(new DummyObject(
+            new THREE.Vector3(0, 1, -8), 
+            "Portal", 
+            "enter", 
+            this.onPortalActivate
+        ));
 
         this.add(new Column(new THREE.Vector3(-10, 0, 0), 1,1/2, 1 * 3 / 5,2));
         this.add(new Column(new THREE.Vector3(-10, 0, 7), 1,1/2,1* 3 / 5,7));

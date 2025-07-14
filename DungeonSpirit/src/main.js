@@ -25,9 +25,12 @@ import { Spirit } from './skeletons/Spirit.js';
 
 // -------- UI --------
 import { StartMenu } from './ui/StartMenu.js';
+import { CongratulationsOverlay } from './ui/CongratulationsOverlay.js';
 
 // -------- Default --------
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
+
+let DEBUG = false;
 
 let scene, camera, renderer, composer, controls, audio;
 let currentLightsFolder, gui;
@@ -56,7 +59,7 @@ composer = renderManager.getComposer();
 
 const controlsManager = new ControlsManager(camera, renderer.domElement);
 controls = controlsManager.getControls();
-controls.enabled = false; // Disable controls until game starts
+controls.enabled = false; 
 
 let lightsManager = new LightsManager(scene, renderer);
 let roomInstances = {};
@@ -79,32 +82,21 @@ function startGame() {
         
         // Start the music when game begins
         if (audio) {
-            audio.play();
+            audio.togglePlayPause();
         }
         
-        // Enable controls and hide cursor for game mode
         controls.enabled = true;
-        document.body.style.cursor = 'none';
         
-        // Enable pointer lock
-        renderer.domElement.addEventListener('click', () => {
-            renderer.domElement.requestPointerLock();
-        });
     } else {
-        // Resume game if already started
         controls.enabled = true;
-        document.body.style.cursor = 'none';
+
         
-        // Resume music if it was paused
         if (audio && audio.isLoaded && !audio.isPlaying) {
-            audio.play();
+            audio.togglePlayPause();
         }
     }
 }
 
-function showSettings() {
-    alert('Settings panel coming soon!');
-}
 
 function exitGame() {
     if (confirm('Are you sure you want to exit?')) {
@@ -116,9 +108,7 @@ function pauseGame() {
     if (gameStarted && startMenu) {
         controls.enabled = false;
         document.body.style.cursor = 'default';
-        document.exitPointerLock();
         
-        // Pause music when game is paused
         if (audio && audio.isPlaying) {
             audio.pause();
         }
@@ -132,20 +122,45 @@ function init(){
     audio = new AudioManager(camera);
     
     setupRooms();
-    setupGUI();
+    if(DEBUG == true)
+        setupGUI();
     setupInteraction(); 
 
     window.addEventListener('resize', onWindowResize);
 }
 
+function handlePortalActivation() {
+    showCongratulationsAndReturnToMenu();
+}
+
+function showCongratulationsAndReturnToMenu() {
+    controls.enabled = false;
+    
+    if (audio && audio.isPlaying) {
+        audio.togglePlayPause();
+    }
+    
+    const congratsOverlay = new CongratulationsOverlay(() => {
+        gameStarted = false;
+        
+        
+        if (currentRoom && currentRoom.name !== 'start_room') {
+            onRoomChange('start_room', null);
+        }
+    });
+    
+    congratsOverlay.show();
+}
+
 
 
 function setupRooms(){
-    roomInstances['balcony_room'] = new BalconyRoom();
+    
     roomInstances['corridor_room'] = new CorridorRoom();
     roomInstances['start_room'] = new StartRoom();    
     roomInstances['altair_room'] = new AltairRoom(); 
     roomInstances['gem_room'] = new GemRoom();
+    roomInstances['balcony_room'] = new BalconyRoom("Balcony Room", handlePortalActivation);
     roomInstances['spirit_room'] = new SpiritRoom(scene); 
     
     currentRoom = roomInstances['start_room']; 
@@ -184,9 +199,9 @@ function checkRoomBackground(roomName) {
         const backgroundTexture = textureLoader.load('../../textures/night_background.jpg', (texture) => {
             scene.background = texture;
         });
-        const messageBox = document.getElementById('message-box');
-        messageBox.textContent = "THANKS FOR PLAYING!";
-        messageBox.style.display = 'block';
+        //const messageBox = document.getElementById('message-box');
+        //messageBox.textContent = "THANKS FOR PLAYING!";
+        //messageBox.style.display = 'block';
 
     }else{
         scene.background = null; 
@@ -216,6 +231,8 @@ function handleInteractionKey(event) {
         if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject && !player.currentInteractableNPC && !player.currentInteractableStructure)) {
             return;
         }
+
+        console.log(player.currentInteractableStructure);
 
         if (player.currentInteractableObject) {
             const object = player.currentInteractableObject;
@@ -280,7 +297,6 @@ function enterDoor(doorDefinition) {
     const targetSpawnPoint = doorDefinition.targetSpawnPoint;
 
     if (roomInstances[targetRoomName]) {
-        //console.log(`Entering door to ${targetRoomName}`);
         onRoomChange(targetRoomName, targetSpawnPoint);
     } else {
         console.warn(`Target room "${targetRoomName}" not found!`);
@@ -290,8 +306,6 @@ function enterDoor(doorDefinition) {
 function setupGUI() {
     gui = new GUI();
 
-    
-    
     const audioFolder = gui.addFolder('Audio Controls');
     
     const audioControls = {
@@ -362,7 +376,8 @@ function onRoomChange(newRoomName, targetSpawnPoint) {
 
     // Update lights for the new room
     lightsManager.setRoomLights(currentRoom.name, currentRoom.getLightsDefinition());
-    updateLightsGUI(currentRoom.name);
+    if(DEBUG == true)
+        updateLightsGUI(currentRoom.name);
 
     //console.log(`Switched to ${currentRoom.name}`);
 
@@ -541,7 +556,6 @@ function animate() {
     guardSpirit1.update(deltaTime, elapsedTime);
     guardSpirit2.update(deltaTime, elapsedTime);
 
-    //console.log(player.currentInteractableNPC);
     if(player.currentInteractableDoor || player.currentInteractableObject || player.currentInteractableNPC || player.currentInteractableStructure){
         if(player.currentInteractableDoor)
             interactDoor();
