@@ -15,8 +15,8 @@ export class Spirit {
     initializeSpirit(initPose, sphereColor = 0xff2222) {
         const sphereGeometry = new THREE.SphereGeometry(0.7, 8, 8);
         const sphereMaterial = new THREE.MeshStandardMaterial({
-            color: sphereColor, // Main color of the spirit
-            emissive: 0xaa0000, // Emissive color, makes it glow
+            color: sphereColor,
+            emissive: new THREE.Color(sphereColor).multiplyScalar(0.8),
             roughness: 0.3,
             metalness: 0.1,
             transparent: true,
