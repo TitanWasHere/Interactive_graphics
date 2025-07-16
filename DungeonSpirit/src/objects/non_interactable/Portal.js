@@ -16,8 +16,6 @@ export class Portal extends THREE.Object3D {
 
     createPortalMeshes() {
         const portalColor = 0x3355ff;
-        const tubeRadius = 0.1; 
-
 
         const ellipseCurve = new THREE.EllipseCurve(
             0, 0,             
@@ -26,17 +24,6 @@ export class Portal extends THREE.Object3D {
             false,            
             0              
         );
-
-
-        const tubeGeometry = new THREE.TubeGeometry(ellipseCurve, 64, tubeRadius, 8, false);
-        const tubeMaterial = new THREE.MeshStandardMaterial({
-            color: portalColor,
-            emissive: portalColor,
-            emissiveIntensity: 2,
-            side: THREE.DoubleSide
-        });
-        const portalBorder = new THREE.Mesh(tubeGeometry, tubeMaterial);
-        this.add(portalBorder);
 
         const innerShape = new THREE.Shape(ellipseCurve.getPoints(50));
         const innerGeometry = new THREE.ShapeGeometry(innerShape);
@@ -49,7 +36,7 @@ export class Portal extends THREE.Object3D {
         this.add(portalInterior);
 
 
-        const wispCount = 40;
+        const wispCount = 60;
         const wispGeometry = new THREE.SphereGeometry(0.05, 8, 8); 
         const wispMaterial = new THREE.MeshStandardMaterial({
             color: portalColor,
@@ -59,14 +46,14 @@ export class Portal extends THREE.Object3D {
 
         for (let i = 0; i < wispCount; i++) {
             const wisp = new THREE.Mesh(wispGeometry, wispMaterial);
-            
-            const radius = Math.random() * (this.width / 2 - tubeRadius);
+
+            const maxRadius = this.width / 2;
+            const radius = maxRadius + 0.5;
             const angle = Math.random() * Math.PI * 2;
 
             wisp.position.x = Math.cos(angle) * radius;
-            wisp.position.y = (Math.random() - 0.5) * (this.height - tubeRadius * 2);
-            
-            // Allunghiamo le sfere per farle sembrare più delle "volute"
+            wisp.position.y = (Math.random() - 0.5) * this.height;
+
             wisp.scale.set(
                 1 + Math.random(),
                 2 + Math.random() * 2,
@@ -78,9 +65,11 @@ export class Portal extends THREE.Object3D {
 
             this.wisps.push({
                 mesh: wisp,
-                radius: radius,
+                radiusX: radius * (this.width / this.height), 
+                radiusY: radius, 
                 angle: angle,
-                speed: 0.5 + Math.random()
+                speed: 0.5 + Math.random() * 0.8, 
+                baseY: wisp.position.y 
             });
         }
 
@@ -93,13 +82,19 @@ export class Portal extends THREE.Object3D {
         for (const wisp of this.wisps) {
             wisp.angle += wisp.speed * deltaTime;
             
-            wisp.mesh.position.x = Math.cos(wisp.angle) * wisp.radius;
-            wisp.mesh.position.y += Math.sin(wisp.angle * 2.5) * 0.01;
+            const ellipseX = Math.cos(wisp.angle) * wisp.radiusX;
+            const ellipseY = Math.sin(wisp.angle) * wisp.radiusY;
             
-            const verticalBounds = (this.height / 2) - 0.2;
-            if (wisp.mesh.position.y > verticalBounds || wisp.mesh.position.y < -verticalBounds) {
-                 wisp.mesh.position.y = Math.max(-verticalBounds, Math.min(verticalBounds, wisp.mesh.position.y));
-            }
+            wisp.mesh.position.x = ellipseX;
+            wisp.mesh.position.y = ellipseY + wisp.baseY * 0.3; 
+            
+            wisp.mesh.position.z = Math.sin(wisp.angle * 3) * 0.1;
+            
+            const maxY = (this.height / 2) - 0.2;
+            const minY = -(this.height / 2) + 0.2;
+            wisp.mesh.position.y = Math.max(minY, Math.min(maxY, wisp.mesh.position.y));
+            
+            wisp.mesh.rotation.z += wisp.speed * deltaTime * 0.5;
         }
     }
 }

@@ -77,10 +77,9 @@ export class Spirit {
         this.mainLight.position.copy(this.mesh.position);
         this.mainLight.castShadow = true;
         
-        this.mainLight.shadow.mapSize.width = 1024;
-        this.mainLight.shadow.mapSize.height = 1024;
-        this.mainLight.shadow.bias = -0.001;
-        this.mainLight.shadow.camera.near = 0.1;
+
+
+        this.mainLight.shadow.camera.near = -0.1;
         this.mainLight.shadow.camera.far = this.lightDistance;
 
         this.ambientContribution = new THREE.AmbientLight(
