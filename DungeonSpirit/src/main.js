@@ -225,7 +225,7 @@ function setupInteraction() {
 
 function handleInteractionKey(event) {
  
-    if (event.key.toLowerCase() === 'i') { 
+    if (event.key.toLowerCase() === 'e') { 
         
 
         if(!player || (!player.currentInteractableDoor && !player.currentInteractableObject && !player.currentInteractableNPC && !player.currentInteractableStructure)) {
@@ -483,13 +483,13 @@ function interactDoor(){
 
     interactionPromptElement.style.display = 'block';
     if(player.currentInteractableDoor.interactable)
-        interactionPromptElement.textContent = `Press [I] to enter ${player.currentInteractableDoor.nameTargetRoom}`;
+        interactionPromptElement.textContent = `Press [E] to enter ${player.currentInteractableDoor.nameTargetRoom}`;
     else{
         const toUnlock = player.currentInteractableDoor.toUnlock;
 
         if(toUnlock && inventory.getItem(toUnlock)){
             unlockable = true;
-            interactionPromptElement.textContent = `Press [I] to unlock ${player.currentInteractableDoor.nameTargetRoom} using ${inventory.getItem(toUnlock).name}`;
+            interactionPromptElement.textContent = `Press [E] to unlock ${player.currentInteractableDoor.nameTargetRoom} using ${inventory.getItem(toUnlock).name}`;
         }else{
             unlockable = false;
             interactionPromptElement.textContent = `This door is locked.`;
@@ -504,7 +504,7 @@ function interactNPC(){
     const npc = player.currentInteractableNPC;
     
     if (npc) {
-        interactionPromptElement.textContent = `Press [I] to interact with ${npc.name}`;
+        interactionPromptElement.textContent = `Press [E] to interact with ${npc.name}`;
     } else {
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
@@ -518,7 +518,7 @@ function interactObject() {
     
     if (object) {
         console.log("Interacting with object:", object);
-        interactionPromptElement.textContent = `Press [I] to take ${object.itemData.name}`;
+        interactionPromptElement.textContent = `Press [E] to take ${object.itemData.name}`;
     } else {
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
@@ -531,7 +531,7 @@ function interactStructure() {
     const structure = player.currentInteractableStructure;
     
     if (structure) {
-        interactionPromptElement.textContent = `Press [I] to ${structure.typeInteraction} ${structure.name}`;
+        interactionPromptElement.textContent = `Press [E] to ${structure.typeInteraction} ${structure.name}`;
     } else {
         interactionPromptElement.style.display = 'none';
         interactionPromptElement.textContent = '';
